@@ -13,11 +13,14 @@ namespace fup
         public:
             virtual fup::core::entity::packet *receive_packet(boost::shared_ptr<boost::asio::ip::udp::socket> handler) const override;
             virtual int receive_resend(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const override;
-            virtual fup::core::entity::metadata *receive_metadata(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const override;
+            virtual fup::core::entity::metadata *receive_metadata(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) override;
             virtual std::string receive_key(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const override;
             virtual bool validate_checksum(unsigned char *data, unsigned char *checksum) const override;
 
             ~receiver(){};
+
+        private:
+            fup::core::entity::metadata *metadata;
         };
     }
 }
