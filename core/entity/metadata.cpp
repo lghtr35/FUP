@@ -13,35 +13,35 @@ namespace fup
         {
             std::vector<uint8_t> metadata::serialize() const
             {
-                // Convert file_package_size and file_total_size to bytes
-                std::vector<uint8_t> file_package_size_bytes(sizeof(unsigned short));
-                std::memcpy(file_package_size_bytes.data(), &file_package_size, sizeof(unsigned short));
+                std::vector<uint8_t> serializedData;
 
-                std::vector<uint8_t> file_total_size_bytes(sizeof(unsigned int));
-                std::memcpy(file_total_size_bytes.data(), &file_total_size, sizeof(unsigned int));
+                // Convert file_package_size to big-endian and copy
+                unsigned short packageSizeBE = htons(file_package_size);
+                std::vector<uint8_t> packageSizeBytes(sizeof(unsigned short));
+                std::memcpy(packageSizeBytes.data(), &packageSizeBE, sizeof(unsigned short));
 
-                // Convert file_name to bytes
-                std::vector<uint8_t> file_name_bytes(file_name.begin(), file_name.end());
+                // Convert file_total_size to big-endian and copy
+                unsigned int totalSizeBE = htonl(file_total_size);
+                std::vector<uint8_t> totalSizeBytes(sizeof(unsigned int));
+                std::memcpy(totalSizeBytes.data(), &totalSizeBE, sizeof(unsigned int));
 
-                // Convert file_extension to bytes
-                std::vector<uint8_t> file_extension_bytes(file_extension.begin(), file_extension.end());
+                // Convert file_name length to big-endian and copy
+                uint32_t fileNameLenBE = htonl(file_name.size());
+                std::vector<uint8_t> fileNameLenBytes(sizeof(uint32_t));
+                std::memcpy(fileNameLenBytes.data(), &fileNameLenBE, sizeof(uint32_t));
 
-                // Convert lengths to bytes
-                std::vector<uint8_t> file_name_length_bytes(sizeof(uint32_t));
-                uint32_t file_name_size = file_name_bytes.size();
-                std::memcpy(file_name_length_bytes.data(), &file_name_size, sizeof(uint32_t));
-
-                std::vector<uint8_t> file_extension_length_bytes(sizeof(uint32_t));
-                uint32_t file_extension_size = file_extension_bytes.size();
-                std::memcpy(file_extension_length_bytes.data(), &file_extension_size, sizeof(uint32_t));
+                // Convert file_extension length to big-endian and copy
+                uint32_t fileExtensionLenBE = htonl(file_extension.size());
+                std::vector<uint8_t> fileExtensionLenBytes(sizeof(uint32_t));
+                std::memcpy(fileExtensionLenBytes.data(), &fileExtensionLenBE, sizeof(uint32_t));
 
                 // Concatenate all byte vectors
-                return helper::serializer::concatenate_vectors<uint8_t>({file_package_size_bytes,
-                                                                         file_total_size_bytes,
-                                                                         file_name_length_bytes,
-                                                                         file_name_bytes,
-                                                                         file_extension_length_bytes,
-                                                                         file_extension_bytes});
+                return helper::serializer::concatenate_vectors<uint8_t>({packageSizeBytes,
+                                                                         totalSizeBytes,
+                                                                         fileNameLenBytes,
+                                                                         std::vector<uint8_t>(file_name.begin(), file_name.end()),
+                                                                         fileExtensionLenBytes,
+                                                                         std::vector<uint8_t>(file_extension.begin(), file_extension.end())});
             }
 
             size_t metadata::deserialize(const std::vector<uint8_t> &data)
@@ -50,34 +50,39 @@ namespace fup
 
                 // Deserialize file_package_size
                 std::memcpy(&file_package_size, data.data() + offset, sizeof(unsigned short));
+                file_package_size = ntohs(file_package_size);
                 offset += sizeof(unsigned short);
 
                 // Deserialize file_total_size
                 std::memcpy(&file_total_size, data.data() + offset, sizeof(unsigned int));
+                file_total_size = ntohl(file_total_size);
                 offset += sizeof(unsigned int);
 
                 // Deserialize file_name length
-                uint32_t file_nameLen;
-                std::memcpy(&file_nameLen, data.data() + offset, sizeof(uint32_t));
+                uint32_t fileNameLen;
+                std::memcpy(&fileNameLen, data.data() + offset, sizeof(uint32_t));
+                fileNameLen = ntohl(fileNameLen);
                 offset += sizeof(uint32_t);
 
                 // Deserialize file_name
-                file_name.resize(file_nameLen);
-                std::memcpy(file_name.data(), data.data() + offset, file_nameLen);
-                offset += file_nameLen;
+                file_name.resize(fileNameLen);
+                std::memcpy(file_name.data(), data.data() + offset, fileNameLen);
+                offset += fileNameLen;
 
                 // Deserialize file_extension length
-                uint32_t file_extensionLen;
-                std::memcpy(&file_extensionLen, data.data() + offset, sizeof(uint32_t));
+                uint32_t fileExtensionLen;
+                std::memcpy(&fileExtensionLen, data.data() + offset, sizeof(uint32_t));
+                fileExtensionLen = ntohl(fileExtensionLen);
                 offset += sizeof(uint32_t);
 
                 // Deserialize file_extension
-                file_extension.resize(file_extensionLen);
-                std::memcpy(file_extension.data(), data.data() + offset, file_extensionLen);
-                offset += file_extensionLen;
+                file_extension.resize(fileExtensionLen);
+                std::memcpy(file_extension.data(), data.data() + offset, fileExtensionLen);
+                offset += fileExtensionLen;
 
                 return offset;
             }
+
         }
     }
 }
