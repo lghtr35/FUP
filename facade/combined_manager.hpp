@@ -5,7 +5,7 @@
 
 namespace fup
 {
-    namespace client
+    namespace facade
     {
         class combined_manager
         {
