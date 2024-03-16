@@ -6,4 +6,5 @@
 #define RESEND_BUFFER_SIZE 18
 #define KEY_BUFFER_SIZE 64
 #define PACKET_FIXED_BUFFER_SIZE 40
+#define OK_BUFFER_SIZE 2
 #endif

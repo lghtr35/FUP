@@ -1,30 +1,33 @@
 #pragma once
-
 #include <core/sender.hpp>
-#include <iostream>
 
 namespace fup
 {
     namespace core
     {
-        // Serialization function for string payload
-        std::vector<uint8_t> sender::serialize_payload(const std::string &p) const
+        sender::sender(int port)
         {
-            return std::vector<uint8_t>(p.begin(), p.end());
+            hasher = new blake3_hasher();
+            socket_factory = new helper::socket_singleton_factory();
         }
 
-        // Serialization function for entities that are serializable
-        template <typename T, typename = std::enable_if_t<std::is_base_of_v<entity::serializable, T>>>
-        std::vector<uint8_t> sender::serialize_payload(const T &p) const
+        sender::~sender()
         {
-            return p.serialize();
+            delete hasher;
+            delete socket_factory;
+        }
+
+        std::vector<uint8_t> *sender::create_checksum(std::vector<uint8_t> &data)
+        {
+            return helper::checksum::create_checksum(hasher, data);
         }
 
         // Function to send data over TCP socket with error handling
         template <typename T>
-        int sender::send_tcp(boost::shared_ptr<boost::asio::ip::tcp::socket> &handler, const T &payload) const
+        int sender::send_tcp(const T &payload)
         {
-            std::vector<uint8_t> bytes = serialize_payload(payload);
+            boost::asio::ip::tcp::socket *handler = socket_factory.get_tcp();
+            std::vector<uint8_t> bytes = helper::serializer::serialize_payload(payload);
             size_t byteCount = bytes.size();
 
             size_t bytesSent = 0;
@@ -50,10 +53,11 @@ namespace fup
 
         // Function to send data over UDP socket with error handling
         template <typename T>
-        int sender::send_udp(boost::shared_ptr<boost::asio::ip::udp::socket> &handler, const T &payload) const
+        int sender::send_udp(const T &payload)
         {
+            boost::asio::ip::udp::socket *handler = socket_factory.get_tcp();
             // Convert payload to byte vector
-            std::vector<uint8_t> bytes = serialize_payload(payload);
+            std::vector<uint8_t> bytes = helper::serializer::serialize_payload(payload);
             size_t byteCount = bytes.size();
 
             size_t bytesSent = 0;
@@ -76,29 +80,40 @@ namespace fup
 
             return bytesSent;
         }
+        // Function to send ok to start udp data transfer
+        int sender::send_ok()
+        {
+            return send_tcp(new std::string("OK"));
+        }
 
         // Function to send a key over TCP socket
-        int sender::send_key(boost::shared_ptr<boost::asio::ip::tcp::socket> handler, const std::string key) const
+        int sender::send_key(const std::string key)
         {
-            return send_tcp(handler, key);
+            return send_tcp(key);
         }
 
         // Function to send metadata over TCP socket
-        int sender::send_metadata(boost::shared_ptr<boost::asio::ip::tcp::socket> handler, const entity::metadata &metadata) const
+        int sender::send_metadata(const entity::metadata &metadata)
         {
-            return send_tcp(handler, metadata);
+            return send_tcp(metadata);
         }
 
         // Function to send a packet over UDP socket
-        int sender::send_packet(boost::shared_ptr<boost::asio::ip::udp::socket> handler, const entity::packet &packet) const
+        int sender::send_packet(const entity::packet &packet)
         {
-            return send_udp(handler, packet);
+            return send_udp(packet);
         }
 
         // Function to send a resend request over TCP socket
-        int sender::send_resend(boost::shared_ptr<boost::asio::ip::tcp::socket> handler, int packageNumber) const
+        int sender::send_resend(const int &package_number)
         {
-            return send_tcp(handler, "RE" + std::to_string(packageNumber));
+            std::string resend_str = "RE" + std::to_string(package_number);
+            return send_tcp(resend_str);
+        }
+
+        int sender::send_request(const fup::core::entity::request &request)
+        {
+            return send_tcp(request);
         }
     };
 }

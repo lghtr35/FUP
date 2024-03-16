@@ -5,5 +5,6 @@
 #include <core/entity/packet.cpp>
 #include <core/entity/metadata.cpp>
 #include <core/entity/header.cpp>
+#include <core/entity/request.cpp>
 #include <core/entity/serializable.hpp>
 #endif

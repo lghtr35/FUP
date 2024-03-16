@@ -3,6 +3,8 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <string>
+#include <core/entity/serializable.hpp>
 
 namespace fup
 {
@@ -28,6 +30,19 @@ namespace fup
                     }
 
                     return combinedVector;
+                }
+
+                // Serialization function for string payload
+                static std::vector<uint8_t> serialize_payload(const std::string &p)
+                {
+                    return std::vector<uint8_t>(p.begin(), p.end());
+                }
+
+                // Serialization function for entities that are serializable
+                template <typename T, typename = std::enable_if_t<std::is_base_of_v<fup::core::entity::serializable, T>>>
+                static std::vector<uint8_t> serialize_payload(const T &p)
+                {
+                    return p.serialize();
                 }
             };
         }

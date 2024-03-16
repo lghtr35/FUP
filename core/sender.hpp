@@ -2,33 +2,40 @@
 
 #ifndef FUP_CORE_SENDER_HPP
 #define FUP_CORE_SENDER_HPP
-#include <core/transmission/transmission.hpp>
 #include <string>
 #include <vector>
+#include <iostream>
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
+#include <BLAKE3/c/blake3.h>
 #include <core/entity/entity.hpp>
+#include <core/helper/helper.hpp>
 
 namespace fup
 {
     namespace core
     {
-        class sender : transmission::sender_base
+        class sender
         {
         public:
-            int send_key(boost::shared_ptr<boost::asio::ip::tcp::socket> handler, const std::string key) const override;
-            int send_metadata(boost::shared_ptr<boost::asio::ip::tcp::socket> handler, const entity::metadata &metadata) const override;
-            int send_packet(boost::shared_ptr<boost::asio::ip::udp::socket> handler, const entity::packet &packet) const override;
-            int send_resend(boost::shared_ptr<boost::asio::ip::tcp::socket> handler, const int packageNumber) const override;
+            int send_key(const std::string key);
+            int send_metadata(const entity::metadata &metadata);
+            int send_packet(const entity::packet &packet);
+            int send_request(const entity::request &request);
+            int send_resend(const int &package_number);
+            int send_ok();
+            std::vector<uint8_t> *create_checksum(std::vector<uint8_t> &data);
+            sender(int port);
+            ~sender();
 
         private:
             template <typename T>
-            int send_tcp(boost::shared_ptr<boost::asio::ip::tcp::socket> &handler, const T &payload) const;
+            int send_tcp(const T &payload);
             template <typename T>
-            int send_udp(boost::shared_ptr<boost::asio::ip::udp::socket> &handler, const T &payload) const;
-            std::vector<uint8_t> serialize_payload(const std::string &p) const;
-            template <typename T, typename = std::enable_if_t<std::is_base_of_v<entity::serializable, T>>>
-            std::vector<uint8_t> serialize_payload(const T &p) const;
+            int send_udp(const T &payload);
+
+            fup::core::helper::socket_singleton_factory *socket_factory;
+            blake3_hasher *hasher;
         };
     }
 }

@@ -14,7 +14,8 @@ namespace fup
             {
             public:
                 metadata(){};
-                explicit metadata(unsigned short fps, unsigned int fts, std::string fn, std::string fe) : file_package_size(fps), file_total_size(fts), file_name(fn), file_extension(fe){};
+                explicit metadata(unsigned int tp, unsigned short fps, unsigned int fts, std::string fn, std::string fe) : file_package_size(fps), file_total_size(fts), file_name(fn), file_extension(fe){};
+                unsigned int tcp_port;            // 4 bytes
                 unsigned short file_package_size; // 2 bytes
                 unsigned int file_total_size;     // 4 bytes
                 std::string file_name;            // Unknown amount of bytes

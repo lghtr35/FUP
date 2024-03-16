@@ -2,25 +2,34 @@
 
 #ifndef FUP_CORE_RECEIVER_HPP
 #define FUP_CORE_RECEIVER_HPP
-#include <core/transmission/transmission.hpp>
+#include <core/entity/entity.hpp>
+#include <core/helper/helper.hpp>
+#include <iostream>
+#include <BLAKE3/c/blake3.h>
+#include <boost/asio.hpp>
 
 namespace fup
 {
     namespace core
     {
-        class receiver : transmission::receiver_base
+        class receiver
         {
         public:
-            virtual fup::core::entity::packet *receive_packet(boost::shared_ptr<boost::asio::ip::udp::socket> handler) const override;
-            virtual int receive_resend(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const override;
-            virtual fup::core::entity::metadata *receive_metadata(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) override;
-            virtual std::string receive_key(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const override;
-            virtual bool validate_checksum(unsigned char *data, unsigned char *checksum) const override;
-
+            fup::core::entity::request *receive_request();
+            fup::core::entity::packet *receive_packet(unsigned short &fps);
+            bool receive_ok();
+            int receive_resend();
+            fup::core::entity::metadata *receive_metadata();
+            std::string receive_key();
+            bool validate_checksum(std::vector<uint8_t> &data, std::vector<uint8_t> &checksum);
+            std::vector<uint8_t> *create_checksum(std::vector<uint8_t> &data);
+            receiver();
             ~receiver(){};
 
         private:
             fup::core::entity::metadata *metadata;
+            blake3_hasher *hasher;
+            fup::core::helper::socket_singleton_factory *socket_factory;
         };
     }
 }

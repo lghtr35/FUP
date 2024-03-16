@@ -1,15 +1,36 @@
 #pragma once
-#include <core/entity/entity.hpp>
-#include <core/helper/helper.hpp>
 #include <core/receiver.hpp>
-#include <iostream>
 
 namespace fup
 {
     namespace core
     {
-        fup::core::entity::packet *receiver::receive_packet(boost::shared_ptr<boost::asio::ip::udp::socket> handler) const
+        receiver::receiver()
         {
+            hasher = new blake3_hasher();
+            socket_factory = new helper::socket_singleton_factory();
+        }
+
+        receiver::~receiver()
+        {
+            delete hasher;
+            delete socket_factory;
+            delete metadata;
+        }
+
+        bool receiver::validate_checksum(std::vector<uint8_t> &data, std::vector<uint8_t> &checksum)
+        {
+            return helper::checksum::validate_checksum(hasher, data, checksum);
+        }
+
+        std::vector<uint8_t> *receiver::create_checksum(std::vector<uint8_t> &data)
+        {
+            return helper::checksum::create_checksum(hasher, data);
+        }
+
+        fup::core::entity::packet *receiver::receive_packet(unsigned short &fps)
+        {
+            boost::asio::ip::udp::socket *handler = socket_factory->get_udp();
             // Create a packet object to store received data
             fup::core::entity::packet *received_packet = new fup::core::entity::packet();
 
@@ -52,8 +73,9 @@ namespace fup
             return received_packet;
         }
 
-        int receiver::receive_resend(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const
+        int receiver::receive_resend()
         {
+            boost::asio::ip::tcp::socket *handler = socket_factory->get_tcp();
             try
             {
 
@@ -88,8 +110,9 @@ namespace fup
             }
         }
 
-        entity::metadata *receiver::receive_metadata(boost::shared_ptr<boost::asio::ip::tcp::socket> handler)
+        entity::metadata *receiver::receive_metadata()
         {
+            boost::asio::ip::tcp::socket *handler = socket_factory->get_tcp();
             try
             {
                 std::vector<uint8_t> buffer(METADATA_BUFFER_SIZE);
@@ -99,7 +122,7 @@ namespace fup
 
                 entity::metadata *received_metadata = new entity::metadata();
                 received_metadata->deserialize(buffer);
-                this->metadata = received_metadata;
+                metadata = received_metadata;
                 // Return the received metadata object
                 return received_metadata;
             }
@@ -112,8 +135,9 @@ namespace fup
             }
         }
 
-        std::string receiver::receive_key(boost::shared_ptr<boost::asio::ip::tcp::socket> handler) const
+        std::string receiver::receive_key()
         {
+            boost::asio::ip::tcp::socket *handler = socket_factory->get_tcp();
             // Buffer to store received data
             std::array<char, KEY_BUFFER_SIZE> buffer;
 
@@ -132,6 +156,33 @@ namespace fup
             std::string receivedKey(buffer.data(), bytesReceived);
 
             return receivedKey;
+        }
+
+        bool receiver::receive_ok()
+        {
+            boost::asio::ip::tcp::socket *handler = socket_factory->get_tcp();
+            // Buffer to store received data
+            std::array<char, OK_BUFFER_SIZE> buffer;
+
+            // Receive data from the TCP socket into the buffer
+            boost::system::error_code error;
+            size_t bytes_received = handler->receive(boost::asio::buffer(buffer), 0, error);
+
+            // Check for errors
+            if (error)
+            {
+                // Handle error
+                throw std::runtime_error("Error receiving key: " + error.message());
+            }
+
+            // Convert received data to string
+            std::string ok_string(buffer.data(), bytes_received);
+
+            if (ok_string == std::string("OK"))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
