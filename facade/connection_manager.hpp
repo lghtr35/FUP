@@ -1,13 +1,14 @@
 #pragma once
-#ifndef FUP_COMBINED_MANAGER_HPP
-#define FUP_COMBINED_MANAGER_HPP
+#ifndef FUP_CONNECTION_MANAGER_HPP
+#define FUP_CONNECTION_MANAGER_HPP
 #include <core/core.hpp>
+#include "helper/helper.hpp"
 
 namespace fup
 {
     namespace facade
     {
-        class combined_manager
+        class connection_manager
         {
         public:
             // Server
@@ -18,13 +19,13 @@ namespace fup
             void init_handshake();
             void handle_file();
             // House Keeping
-            combined_manager();
-            ~combined_manager();
+            connection_manager();
+            ~connection_manager();
 
         private:
-            fup::core::sender sender;
-            fup::core::receiver receiver;
-            fup::core::helper::socket_singleton_factory socket_factory;
+            helper::connection_factory *connection_factory;
+            boost::asio::ip::tcp::acceptor *acceptor;
+            unsigned int max_connections;
         };
     }
 }
