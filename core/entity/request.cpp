@@ -11,17 +11,16 @@ namespace fup
         {
             std::vector<uint8_t> request::serialize() const
             {
-                // Convert udp_port to big-endian and copy
-                unsigned int udp_port_BE = htonl(udp_port);
-                std::vector<uint8_t> udpPortBytes(sizeof(unsigned int));
-                std::memcpy(udpPortBytes.data(), &udp_port_BE, sizeof(unsigned int));
+                // Convert is_download to big-endian and copy
+                std::vector<uint8_t> isDownloadBytes(sizeof(bool));
+                std::memcpy(isDownloadBytes.data(), &is_download, sizeof(unsigned int));
 
                 // Convert file_name length to big-endian and copy
                 uint32_t fileNameLenBE = htonl(file_name.size());
                 std::vector<uint8_t> fileNameLenBytes(sizeof(uint32_t));
                 std::memcpy(fileNameLenBytes.data(), &fileNameLenBE, sizeof(uint32_t));
 
-                return helper::serializer::concatenate_vectors<uint8_t>({udpPortBytes,
+                return helper::serializer::concatenate_vectors<uint8_t>({isDownloadBytes,
                                                                          fileNameLenBytes,
                                                                          std::vector<uint8_t>(file_name.begin(), file_name.end())});
             }
@@ -30,10 +29,9 @@ namespace fup
             {
                 size_t offset = 0;
 
-                // Deserialize udp_port
-                std::memcpy(&udp_port, data.data() + offset, sizeof(unsigned int));
-                udp_port = ntohl(udp_port);
-                offset += sizeof(unsigned int);
+                // Deserialize is_download
+                std::memcpy(&is_download, data.data() + offset, sizeof(bool));
+                offset += sizeof(bool);
 
                 // Deserialize file_name length
                 uint32_t fileNameLen;

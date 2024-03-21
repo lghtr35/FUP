@@ -37,7 +37,7 @@ namespace fup
                 fup::core::entity::packet *received_packet = new fup::core::entity::packet();
 
                 // Reserve space for receiving packet data using already obtained package size
-                std::vector<uint8_t> received_data(metadata->file_package_size + PACKET_FIXED_BUFFER_SIZE);
+                std::vector<uint8_t> received_data(metadata->file_packet_size + PACKET_FIXED_BUFFER_SIZE);
 
                 // Receive packet data from the UDP socket
                 boost::system::error_code error;

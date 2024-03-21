@@ -19,7 +19,7 @@ namespace fup
             public:
                 request(){};
                 std::string file_name;
-                int udp_port;
+                bool is_download;
                 std::vector<uint8_t> serialize() const override;
                 size_t deserialize(const std::vector<uint8_t> &data) override;
             };

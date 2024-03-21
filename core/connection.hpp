@@ -17,10 +17,15 @@ namespace fup
             ~connection();
             service::sender *get_sender_service();
             service::receiver *get_receiver_service();
+            boost::asio::ip::tcp::socket *get_tcp_socket();
+            boost::asio::ip::udp::socket *get_udp_socket();
+            unsigned int get_id();
 
         private:
             service::receiver *receiver_service;
             service::sender *sender_service;
+            boost::asio::ip::tcp::socket *tcp_socket;
+            boost::asio::ip::udp::socket *udp_socket;
             unsigned int id;
         };
     }

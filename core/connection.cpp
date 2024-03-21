@@ -9,6 +9,8 @@ namespace fup
         {
             receiver_service = new fup::core::service::receiver(tcp, udp, checksum);
             sender_service = new fup::core::service::sender(tcp, udp, checksum);
+            tcp_socket = tcp;
+            udp_socket = udp;
             id = idx;
         }
 
@@ -16,6 +18,8 @@ namespace fup
         {
             delete receiver_service;
             delete sender_service;
+            delete tcp_socket;
+            delete udp_socket;
         }
 
         fup::core::service::receiver *connection::get_receiver_service()
@@ -26,6 +30,11 @@ namespace fup
         fup::core::service::sender *connection::get_sender_service()
         {
             return sender_service;
+        }
+
+        unsigned int connection::get_id()
+        {
+            return id;
         }
     }
 }

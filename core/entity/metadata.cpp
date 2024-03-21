@@ -13,16 +13,10 @@ namespace fup
         {
             std::vector<uint8_t> metadata::serialize() const
             {
-                std::vector<uint8_t> serializedData;
-                // Convert tcp_port to big-endian and copy
-                unsigned int tcpPortBE = htonl(tcp_port);
-                std::vector<uint8_t> tcpPortBytes(sizeof(unsigned int));
-                std::memcpy(tcpPortBytes.data(), &tcpPortBE, sizeof(unsigned int));
-
-                // Convert file_package_size to big-endian and copy
-                unsigned short packageSizeBE = htons(file_package_size);
-                std::vector<uint8_t> packageSizeBytes(sizeof(unsigned short));
-                std::memcpy(packageSizeBytes.data(), &packageSizeBE, sizeof(unsigned short));
+                // Convert file_packet_size to big-endian and copy
+                unsigned int packetSizeBE = htonl(file_packet_size);
+                std::vector<uint8_t> packetSizeBytes(sizeof(unsigned int));
+                std::memcpy(packetSizeBytes.data(), &packetSizeBE, sizeof(unsigned int));
 
                 // Convert file_total_size to big-endian and copy
                 unsigned int totalSizeBE = htonl(file_total_size);
@@ -40,8 +34,7 @@ namespace fup
                 std::memcpy(fileExtensionLenBytes.data(), &fileExtensionLenBE, sizeof(uint32_t));
 
                 // Concatenate all byte vectors
-                return helper::serializer::concatenate_vectors<uint8_t>({tcpPortBytes,
-                                                                         packageSizeBytes,
+                return helper::serializer::concatenate_vectors<uint8_t>({packetSizeBytes,
                                                                          totalSizeBytes,
                                                                          fileNameLenBytes,
                                                                          std::vector<uint8_t>(file_name.begin(), file_name.end()),
@@ -53,15 +46,10 @@ namespace fup
             {
                 size_t offset = 0;
 
-                // Deserialize tcp_port
-                std::memcpy(&tcp_port, data.data() + offset, sizeof(unsigned int));
-                tcp_port = ntohl(tcp_port);
+                // Deserialize file_packet_size
+                std::memcpy(&file_packet_size, data.data() + offset, sizeof(unsigned int));
+                file_packet_size = ntohl(file_packet_size);
                 offset += sizeof(unsigned int);
-
-                // Deserialize file_package_size
-                std::memcpy(&file_package_size, data.data() + offset, sizeof(unsigned short));
-                file_package_size = ntohs(file_package_size);
-                offset += sizeof(unsigned short);
 
                 // Deserialize file_total_size
                 std::memcpy(&file_total_size, data.data() + offset, sizeof(unsigned int));
@@ -92,7 +80,6 @@ namespace fup
 
                 return offset;
             }
-
         }
     }
 }
