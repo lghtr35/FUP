@@ -12,8 +12,8 @@ namespace fup
             class serializable
             {
             public:
-                virtual std::vector<uint8_t> serialize() const = 0;
-                virtual size_t deserialize(const std::vector<uint8_t> &data) = 0;
+                virtual std::vector<char> serialize() const = 0;
+                virtual size_t deserialize(const std::vector<char> &data) = 0;
                 virtual ~serializable() = default;
             };
         }

@@ -36,16 +36,23 @@ namespace fup
                 }
                 return file_name;
             }
-            fup::core::entity::metadata *file_manager::get_metadata(std::ifstream *fs, unsigned int file_packet_size, std::string file_name)
+            fup::core::entity::metadata file_manager::get_metadata(std::ifstream *fs, unsigned int file_packet_size, std::string file_name)
             {
-                return new fup::core::entity::metadata(file_packet_size,
-                                                       std::filesystem::file_size(files_location / std::filesystem::path(file_name)),
-                                                       file_name,
-                                                       get_file_extension(file_name));
+                return fup::core::entity::metadata(file_packet_size,
+                                                   std::filesystem::file_size(files_location / std::filesystem::path(file_name)),
+                                                   file_name,
+                                                   get_file_extension(file_name));
             }
 
             // TODO: think about this
-            std::vector<uint8_t> file_manager::get_file_bytes(std::ifstream *fs) {}
+            std::vector<char> file_manager::get_file_bytes(std::ifstream *fs, unsigned int offset, unsigned int size)
+            {
+                std::vector<char> bytes(size);
+                fs->seekg(offset, std::ios::beg);
+                fs->readsome(bytes.data(), size);
+
+                return bytes;
+            }
         }
     }
 }

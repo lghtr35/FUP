@@ -32,9 +32,43 @@ namespace fup
             return sender_service;
         }
 
+        unsigned int connection::get_packet_size()
+        {
+            return packet_size;
+        }
+
         unsigned int connection::get_id()
         {
             return id;
+        }
+
+        std::streampos connection::get_file_begin()
+        {
+            return file_begin;
+        }
+
+        std::streampos connection::get_file_end()
+        {
+            return file_end;
+        }
+
+        std::ifstream *connection::get_file()
+        {
+            return file;
+        }
+
+        void connection::set_packet_size(unsigned int ps)
+        {
+            packet_size = ps;
+        }
+
+        void connection::set_file(std::ifstream *file_to_use)
+        {
+            file = file_to_use;
+            file_begin = file_to_use->tellg();
+            file_to_use->seekg(0, std::ios::end);
+            file_end = file_to_use->tellg();
+            file_to_use->seekg(0, std::ios::beg);
         }
     }
 }

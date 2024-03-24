@@ -23,8 +23,8 @@ namespace fup
                 int receive_resend();
                 fup::core::entity::metadata *receive_metadata();
                 std::string receive_key();
-                bool validate_checksum(std::vector<uint8_t> &data, std::vector<uint8_t> &checksum);
-                std::vector<uint8_t> *create_checksum(std::vector<uint8_t> &data);
+                bool validate_checksum(std::vector<char> &data, std::vector<char> &checksum);
+                std::vector<char> *create_checksum(std::vector<char> &data);
                 receiver(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<fup::core::interface::checksum> checksum);
                 ~receiver(){};
 

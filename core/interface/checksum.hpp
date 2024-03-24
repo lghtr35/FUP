@@ -13,8 +13,8 @@ namespace fup
             class checksum
             {
             public:
-                virtual bool validate_checksum(std::vector<uint8_t> &data, std::vector<uint8_t> &checksum) = 0;
-                virtual std::vector<uint8_t> *create_checksum(std::vector<uint8_t> &data) = 0;
+                virtual bool validate_checksum(std::vector<char> &data, std::vector<char> &checksum) = 0;
+                virtual std::vector<char> *create_checksum(std::vector<char> &data) = 0;
             };
         }
     }

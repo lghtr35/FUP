@@ -18,8 +18,8 @@ namespace fup
             {
             public:
                 std::ifstream *open_file(std::string file_name);
-                fup::core::entity::metadata *get_metadata(std::ifstream *fs, unsigned int file_packet_size, std::string file_name);
-                std::vector<uint8_t> get_file_bytes(std::ifstream *fs);
+                fup::core::entity::metadata get_metadata(std::ifstream *fs, unsigned int file_packet_size, std::string file_name);
+                std::vector<char> get_file_bytes(std::ifstream *fs, unsigned int offset, unsigned int size);
                 void close_file(std::ifstream *fs);
                 file_manager(std::string fl);
                 ~file_manager();

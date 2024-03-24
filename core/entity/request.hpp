@@ -20,8 +20,9 @@ namespace fup
                 request(){};
                 std::string file_name;
                 bool is_download;
-                std::vector<uint8_t> serialize() const override;
-                size_t deserialize(const std::vector<uint8_t> &data) override;
+                unsigned int packet_size;
+                std::vector<char> serialize() const override;
+                size_t deserialize(const std::vector<char> &data) override;
             };
         }
     }

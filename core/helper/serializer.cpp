@@ -33,14 +33,14 @@ namespace fup
                 }
 
                 // Serialization function for string payload
-                static std::vector<uint8_t> serialize_payload(const std::string &p)
+                static std::vector<char> serialize_payload(const std::string &p)
                 {
-                    return std::vector<uint8_t>(p.begin(), p.end());
+                    return std::vector<char>(p.begin(), p.end());
                 }
 
                 // Serialization function for entities that are serializable
                 template <typename T, typename = std::enable_if_t<std::is_base_of_v<fup::core::entity::serializable, T>>>
-                static std::vector<uint8_t> serialize_payload(const T &p)
+                static std::vector<char> serialize_payload(const T &p)
                 {
                     return p.serialize();
                 }

@@ -10,9 +10,9 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<uint8_t> header::serialize() const
+            std::vector<char> header::serialize() const
             {
-                std::vector<uint8_t> serializedData(32 + 2 * sizeof(int));
+                std::vector<char> serializedData(32 + 2 * sizeof(int));
 
                 // Copy the 'checksum' data
                 std::memcpy(serializedData.data(), checksum.data(), 32);
@@ -28,7 +28,7 @@ namespace fup
                 return serializedData;
             }
 
-            size_t header::deserialize(const std::vector<uint8_t> &data)
+            size_t header::deserialize(const std::vector<char> &data)
             {
                 if (data.size() < 32 + 2 * sizeof(int))
                 {

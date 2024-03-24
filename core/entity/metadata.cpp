@@ -11,38 +11,38 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<uint8_t> metadata::serialize() const
+            std::vector<char> metadata::serialize() const
             {
                 // Convert file_packet_size to big-endian and copy
                 unsigned int packetSizeBE = htonl(file_packet_size);
-                std::vector<uint8_t> packetSizeBytes(sizeof(unsigned int));
+                std::vector<char> packetSizeBytes(sizeof(unsigned int));
                 std::memcpy(packetSizeBytes.data(), &packetSizeBE, sizeof(unsigned int));
 
                 // Convert file_total_size to big-endian and copy
                 unsigned int totalSizeBE = htonl(file_total_size);
-                std::vector<uint8_t> totalSizeBytes(sizeof(unsigned int));
+                std::vector<char> totalSizeBytes(sizeof(unsigned int));
                 std::memcpy(totalSizeBytes.data(), &totalSizeBE, sizeof(unsigned int));
 
                 // Convert file_name length to big-endian and copy
                 uint32_t fileNameLenBE = htonl(file_name.size());
-                std::vector<uint8_t> fileNameLenBytes(sizeof(uint32_t));
+                std::vector<char> fileNameLenBytes(sizeof(uint32_t));
                 std::memcpy(fileNameLenBytes.data(), &fileNameLenBE, sizeof(uint32_t));
 
                 // Convert file_extension length to big-endian and copy
                 uint32_t fileExtensionLenBE = htonl(file_extension.size());
-                std::vector<uint8_t> fileExtensionLenBytes(sizeof(uint32_t));
+                std::vector<char> fileExtensionLenBytes(sizeof(uint32_t));
                 std::memcpy(fileExtensionLenBytes.data(), &fileExtensionLenBE, sizeof(uint32_t));
 
                 // Concatenate all byte vectors
-                return helper::serializer::concatenate_vectors<uint8_t>({packetSizeBytes,
-                                                                         totalSizeBytes,
-                                                                         fileNameLenBytes,
-                                                                         std::vector<uint8_t>(file_name.begin(), file_name.end()),
-                                                                         fileExtensionLenBytes,
-                                                                         std::vector<uint8_t>(file_extension.begin(), file_extension.end())});
+                return helper::serializer::concatenate_vectors<char>({packetSizeBytes,
+                                                                      totalSizeBytes,
+                                                                      fileNameLenBytes,
+                                                                      std::vector<char>(file_name.begin(), file_name.end()),
+                                                                      fileExtensionLenBytes,
+                                                                      std::vector<char>(file_extension.begin(), file_extension.end())});
             }
 
-            size_t metadata::deserialize(const std::vector<uint8_t> &data)
+            size_t metadata::deserialize(const std::vector<char> &data)
             {
                 size_t offset = 0;
 

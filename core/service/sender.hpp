@@ -27,7 +27,7 @@ namespace fup
                 int send_request(const entity::request &request);
                 int send_resend(const int &package_number);
                 int send_ok();
-                std::vector<uint8_t> *create_checksum(std::vector<uint8_t> &data);
+                std::vector<char> *create_checksum(std::vector<char> &data);
                 sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<fup::core::interface::checksum> checksum);
                 ~sender();
 

@@ -19,8 +19,8 @@ namespace fup
                 unsigned int file_total_size;  // 4 bytes
                 std::string file_name;         // Unknown amount of bytes
                 std::string file_extension;    // Unknown amount of bytes
-                std::vector<uint8_t> serialize() const override;
-                size_t deserialize(const std::vector<uint8_t> &data) override;
+                std::vector<char> serialize() const override;
+                size_t deserialize(const std::vector<char> &data) override;
             };
         }
     }

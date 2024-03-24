@@ -21,12 +21,12 @@ namespace fup
                 delete udp_socket;
             }
 
-            bool receiver::validate_checksum(std::vector<uint8_t> &data, std::vector<uint8_t> &checksum)
+            bool receiver::validate_checksum(std::vector<char> &data, std::vector<char> &checksum)
             {
                 return checksum_service->validate_checksum(data, checksum);
             }
 
-            std::vector<uint8_t> *receiver::create_checksum(std::vector<uint8_t> &data)
+            std::vector<char> *receiver::create_checksum(std::vector<char> &data)
             {
                 return checksum_service->create_checksum(data);
             }
@@ -37,7 +37,7 @@ namespace fup
                 fup::core::entity::packet *received_packet = new fup::core::entity::packet();
 
                 // Reserve space for receiving packet data using already obtained package size
-                std::vector<uint8_t> received_data(metadata->file_packet_size + PACKET_FIXED_BUFFER_SIZE);
+                std::vector<char> received_data(metadata->file_packet_size + PACKET_FIXED_BUFFER_SIZE);
 
                 // Receive packet data from the UDP socket
                 boost::system::error_code error;
@@ -115,7 +115,7 @@ namespace fup
             {
                 try
                 {
-                    std::vector<uint8_t> buffer(METADATA_BUFFER_SIZE);
+                    std::vector<char> buffer(METADATA_BUFFER_SIZE);
 
                     // Receive data from the socket
                     size_t bytesReceived = tcp_socket->receive(boost::asio::buffer(buffer));

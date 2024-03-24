@@ -12,13 +12,13 @@ namespace fup
             class header : serializable
             {
             public:
-                header() {};
+                header(){};
                 ~header() = default;
-                std::vector<uint8_t> checksum; // 32 bytes
-                int packet_seq_num;            // 4 bytes
-                int body_length;               // 4 bytes
-                std::vector<uint8_t> serialize() const override;
-                size_t deserialize(const std::vector<uint8_t> &data) override;
+                std::vector<char> checksum; // 32 bytes
+                int packet_seq_num;         // 4 bytes
+                int body_length;            // 4 bytes
+                std::vector<char> serialize() const override;
+                size_t deserialize(const std::vector<char> &data) override;
             };
         }
     }

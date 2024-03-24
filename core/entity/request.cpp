@@ -9,29 +9,39 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<uint8_t> request::serialize() const
+            std::vector<char> request::serialize() const
             {
                 // Convert is_download to big-endian and copy
-                std::vector<uint8_t> isDownloadBytes(sizeof(bool));
-                std::memcpy(isDownloadBytes.data(), &is_download, sizeof(unsigned int));
+                std::vector<char> packetSizeBytes(sizeof(unsigned int));
+                unsigned int packetSizeBE = htonl(packet_size);
+                std::memcpy(packetSizeBytes.data(), &packetSizeBE, sizeof(unsigned int));
+
+                // Convert is_download to big-endian and copy
+                std::vector<char> isDownloadBytes(sizeof(bool));
+                std::memcpy(isDownloadBytes.data(), &is_download, sizeof(bool));
 
                 // Convert file_name length to big-endian and copy
                 uint32_t fileNameLenBE = htonl(file_name.size());
-                std::vector<uint8_t> fileNameLenBytes(sizeof(uint32_t));
+                std::vector<char> fileNameLenBytes(sizeof(uint32_t));
                 std::memcpy(fileNameLenBytes.data(), &fileNameLenBE, sizeof(uint32_t));
 
-                return helper::serializer::concatenate_vectors<uint8_t>({isDownloadBytes,
-                                                                         fileNameLenBytes,
-                                                                         std::vector<uint8_t>(file_name.begin(), file_name.end())});
+                return helper::serializer::concatenate_vectors<char>({isDownloadBytes,
+                                                                      fileNameLenBytes,
+                                                                      std::vector<char>(file_name.begin(), file_name.end())});
             }
 
-            size_t request::deserialize(const std::vector<uint8_t> &data)
+            size_t request::deserialize(const std::vector<char> &data)
             {
                 size_t offset = 0;
 
                 // Deserialize is_download
                 std::memcpy(&is_download, data.data() + offset, sizeof(bool));
                 offset += sizeof(bool);
+
+                // Deserialize packet_size
+                std::memcpy(&packet_size, data.data() + offset, sizeof(unsigned int));
+                packet_size = ntohl(packet_size);
+                offset += sizeof(unsigned int);
 
                 // Deserialize file_name length
                 uint32_t fileNameLen;
