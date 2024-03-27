@@ -14,12 +14,6 @@ namespace fup
             class connection_manager
             {
             public:
-                // Server
-                void listen();
-                void handle_accept(unsigned int id, const boost::system::error_code &error);
-                void handle_handshake(fup::core::connection *connection);
-                void server_upload_file();
-                void server_download_file();
                 // Client
                 void connect();
                 void init_handshake();

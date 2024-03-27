@@ -55,7 +55,7 @@ namespace fup
 
             // Function to send data over UDP socket with error handling
             template <typename T>
-            int sender::send_udp(const T &payload)
+            int sender::send_udp(const T &payload, boost::asio::ip::udp::endpoint &destination)
             {
                 // Convert payload to byte vector
                 std::vector<char> bytes = helper::serializer::serialize_payload(payload);
@@ -67,7 +67,7 @@ namespace fup
                     while (bytesSent < byteCount)
                     {
                         // Send data in chunks until all bytes are sent
-                        bytesSent += udp_socket->send(boost::asio::buffer(bytes.data() + bytesSent, byteCount - bytesSent));
+                        bytesSent += udp_socket->send_to(boost::asio::buffer(bytes.data() + bytesSent, byteCount - bytesSent), destination);
                     }
                 }
                 catch (const boost::system::system_error &e)
@@ -100,9 +100,9 @@ namespace fup
             }
 
             // Function to send a packet over UDP socket
-            int sender::send_packet(const entity::packet &packet)
+            int sender::send_packet(const entity::packet &packet, boost::asio::ip::udp::endpoint &destination)
             {
-                return send_udp(packet);
+                return send_udp(packet, destination);
             }
 
             // Function to send a resend request over TCP socket

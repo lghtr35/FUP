@@ -22,6 +22,11 @@ namespace fup
             delete udp_socket;
         }
 
+        boost::asio::ip::tcp::socket *connection::get_tcp_socket()
+        {
+            return tcp_socket;
+        }
+
         fup::core::service::receiver *connection::get_receiver_service()
         {
             return receiver_service;

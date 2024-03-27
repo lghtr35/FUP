@@ -24,14 +24,19 @@ namespace fup
                     // Dont delete io_context cause it is shared
                 }
 
-                boost::asio::ip::udp::socket *get_udp()
+                boost::asio::ip::udp::socket get_udp()
                 {
-                    return new boost::asio::ip::udp::socket(*io_context);
+                    return boost::asio::ip::udp::socket(*io_context);
                 }
 
-                boost::asio::ip::tcp::socket *get_tcp()
+                boost::asio::ip::udp::socket get_udp(int port)
                 {
-                    return new boost::asio::ip::tcp::socket(*io_context);
+                    return boost::asio::ip::udp::socket(*io_context, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), port));
+                }
+
+                boost::asio::ip::tcp::socket get_tcp()
+                {
+                    return boost::asio::ip::tcp::socket(*io_context);
                 }
 
             private:

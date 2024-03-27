@@ -16,9 +16,8 @@ namespace fup
             class connection_factory
             {
             public:
-                connection_factory(boost::shared_ptr<boost::asio::io_context> ctx, boost::shared_ptr<core::interface::checksum> checksum, int max_conn)
+                connection_factory(boost::shared_ptr<core::interface::checksum> checksum, int max_conn)
                 {
-                    socket_factory = new helper::socket_factory(ctx);
                     checksum_service = checksum;
                     connections.resize(max_conn);
                 }
@@ -30,12 +29,11 @@ namespace fup
                     {
                         delete connections[i];
                     }
-                    delete socket_factory;
                 }
 
-                fup::core::connection *get_connection()
+                fup::core::connection *get_connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp)
                 {
-                    fup::core::connection *connection = new fup::core::connection(socket_factory->get_tcp(), socket_factory->get_udp(), checksum_service, ++connection_count);
+                    fup::core::connection *connection = new fup::core::connection(tcp, udp, checksum_service, ++connection_count);
                     connections[connection_count] = connection;
                     return connection;
                 }
@@ -57,7 +55,6 @@ namespace fup
                 }
 
             private:
-                helper::socket_factory *socket_factory;
                 boost::shared_ptr<core::interface::checksum> checksum_service;
                 std::vector<fup::core::connection *> connections;
                 unsigned int connection_count;
