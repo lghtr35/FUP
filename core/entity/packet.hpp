@@ -14,7 +14,7 @@ namespace fup
             {
             public:
                 packet(){};
-                explicit packet(header h) : header(h){};
+                explicit packet(header h, std::vector<char> b) : header(h), body(b) {};
                 ~packet() = default;
                 header header;          // Fixed size
                 std::vector<char> body; // Variable amount of bytes. Will be preconfigured on server and client connection

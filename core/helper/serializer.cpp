@@ -38,11 +38,19 @@ namespace fup
                     return std::vector<char>(p.begin(), p.end());
                 }
 
+                static std::vector<char> serialize_payload(const fup::core::entity::request &p)
+                {
+                    return p.serialize();
+                }
+
                 // Serialization function for entities that are serializable
                 template <typename T, typename = std::enable_if_t<std::is_base_of_v<fup::core::entity::serializable, T>>>
                 static std::vector<char> serialize_payload(const T &p)
                 {
-                    return p.serialize();
+                    std::string message_identifier("SE");
+                    std::vector<char> res(message_identifier.begin(), message_identifier.end());
+                    res.add(p.serialize());
+                    return res;
                 }
             };
         }

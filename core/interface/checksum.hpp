@@ -14,7 +14,7 @@ namespace fup
             {
             public:
                 virtual bool validate_checksum(std::vector<char> &data, std::vector<char> &checksum) = 0;
-                virtual std::vector<char> *create_checksum(std::vector<char> &data) = 0;
+                virtual std::vector<char> create_checksum(std::vector<char> &data) = 0;
             };
         }
     }

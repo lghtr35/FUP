@@ -21,17 +21,26 @@ namespace fup
                 delete udp_socket;
             }
 
-            bool receiver::validate_checksum(std::vector<char> &data, std::vector<char> &checksum)
+            std::string receiver::receive_message_identifier()
             {
-                return checksum_service->validate_checksum(data, checksum);
+                std::vector<char> received_data(2);
+
+                boost::system::error_code error;
+                size_t bytes_received = tcp_socket->receive(boost::asio::buffer(received_data), 0, error);
+
+                if (error)
+                {
+                    // Handle the error (e.g., log, throw an exception)
+                    // For simplicity, let's just print the error message
+                    std::cerr << "Error receiving identifier: " << error.message() << std::endl;
+
+                    return nullptr;
+                }
+
+                return std::string(received_data.begin(), received_data.end());
             }
 
-            std::vector<char> *receiver::create_checksum(std::vector<char> &data)
-            {
-                return checksum_service->create_checksum(data);
-            }
-
-            fup::core::entity::packet *receiver::receive_packet(unsigned short &fps)
+            fup::core::entity::packet *receiver::receive_packet()
             {
                 // Create a packet object to store received data
                 fup::core::entity::packet *received_packet = new fup::core::entity::packet();
@@ -75,26 +84,29 @@ namespace fup
                 return received_packet;
             }
 
-            int receiver::receive_resend()
+            std::pair<int, int> receiver::receive_resend()
             {
                 try
                 {
-
                     std::array<char, RESEND_BUFFER_SIZE> buffer;
-
                     // Receive data from the socket
                     size_t bytesReceived = tcp_socket->receive(boost::asio::buffer(buffer));
-
                     // Assuming the received data is a resend request in the format "RE<number>"
                     std::string data(buffer.data(), bytesReceived);
 
-                    // Check if the received data starts with "RE"
-                    if (data.substr(0, 2) == "RE")
+                    // 24-52
+                    std::pair<int, int> connection_id_seq_num_pair;
+                    int index = data.find("-");
+                    if (index == -1)
                     {
+                        // Extreact the connection number from firts part
+                        int connection_number = std::stoi(data.substr(0, index));
                         // Extract the sequence number from the rest of the string
-                        int sequenceNumber = std::stoi(data.substr(2));
-                        // Return the extracted sequence number
-                        return sequenceNumber;
+                        int sequence_number = std::stoi(data.substr(index + 1));
+                        // Return the extracted identifiers
+                        connection_id_seq_num_pair.first = connection_number;
+                        connection_id_seq_num_pair.second = sequence_number;
+                        return connection_id_seq_num_pair;
                     }
                     else
                     {

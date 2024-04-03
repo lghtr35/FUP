@@ -2,6 +2,7 @@
 #ifndef FUP_FACADE_SERVER_HPP
 #define FUP_FACADE_SERVER_HPP
 #include <core/core.hpp>
+#include <fstream>
 #include "./helper/helper.hpp"
 #include "./manager/file_manager.hpp"
 
@@ -16,12 +17,14 @@ namespace fup
             void listen();
             void handle_accept(fup::core::connection *connection, const boost::system::error_code &error);
             void handle_handshake(fup::core::connection *connection);
-            void upload_file(fup::core::connection *connection);
-            void download_file(fup::core::connection *connection);
+            void handle_resend(fup::core::connection *connection);
+            void upload_file(fup::core::connection *connection, std::ifstream *file);
+            void download_file(fup::core::connection *connection, std::ifstream *file);
             ~server();
             server();
 
         private:
+            core::interface::checksum *checksum_service;
             manager::file_manager *file_manager;
             helper::connection_factory *connection_factory;
             helper::socket_factory *socket_factory;

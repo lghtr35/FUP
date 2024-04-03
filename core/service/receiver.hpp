@@ -17,14 +17,13 @@ namespace fup
             class receiver
             {
             public:
+                std::string receive_message_identifier();
                 fup::core::entity::request *receive_request();
-                fup::core::entity::packet *receive_packet(unsigned short &fps);
+                fup::core::entity::packet *receive_packet();
                 bool receive_ok();
-                int receive_resend();
+                std::pair<int, int> receive_resend();
                 fup::core::entity::metadata *receive_metadata();
                 std::string receive_key();
-                bool validate_checksum(std::vector<char> &data, std::vector<char> &checksum);
-                std::vector<char> *create_checksum(std::vector<char> &data);
                 receiver(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<fup::core::interface::checksum> checksum);
                 ~receiver(){};
 

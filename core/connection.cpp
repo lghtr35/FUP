@@ -62,13 +62,19 @@ namespace fup
             return file;
         }
 
+        std::string connection::get_file_name()
+        {
+            return file_name;
+        }
+
         void connection::set_packet_size(unsigned int ps)
         {
             packet_size = ps;
         }
 
-        void connection::set_file(std::ifstream *file_to_use)
+        void connection::set_file(std::ifstream *file_to_use, std::string file_name_to_use)
         {
+            file_name = file_name_to_use;
             file = file_to_use;
             file_begin = file_to_use->tellg();
             file_to_use->seekg(0, std::ios::end);

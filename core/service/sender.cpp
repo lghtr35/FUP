@@ -20,11 +20,6 @@ namespace fup
                 delete udp_socket;
             }
 
-            std::vector<char> *sender::create_checksum(std::vector<char> &data)
-            {
-                return checksum_service->create_checksum(data);
-            }
-
             // Function to send data over TCP socket with error handling
             template <typename T>
             int sender::send_tcp(const T &payload)
@@ -84,7 +79,7 @@ namespace fup
             // Function to send ok to start udp data transfer
             int sender::send_ok()
             {
-                return send_tcp(new std::string("OK"));
+                return send_tcp(new std::string("SEOK"));
             }
 
             // Function to send a key over TCP socket
@@ -106,9 +101,9 @@ namespace fup
             }
 
             // Function to send a resend request over TCP socket
-            int sender::send_resend(const int &package_number)
+            int sender::send_resend(const int &connection_id, const int &package_number)
             {
-                std::string resend_str = "RE" + std::to_string(package_number);
+                std::string resend_str = "RE" + std::to_string(connection_id) + "-" + std::to_string(package_number);
                 return send_tcp(resend_str);
             }
 

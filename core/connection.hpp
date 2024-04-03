@@ -23,16 +23,18 @@ namespace fup
             std::streampos get_file_begin();
             std::ifstream *get_file();
             std::streampos get_file_end();
+            std::string get_file_name();
             unsigned int get_id();
             unsigned int get_packet_size();
             void set_packet_size(unsigned int ps);
-            void set_file(std::ifstream *file_to_use);
+            void set_file(std::ifstream *file_to_use, std::string file_name_to_use);
 
         private:
             service::receiver *receiver_service;
             service::sender *sender_service;
             boost::asio::ip::tcp::socket *tcp_socket;
             boost::asio::ip::udp::socket *udp_socket;
+            std::string file_name;
             std::streampos file_begin;
             std::ifstream *file;
             std::streampos file_end;
