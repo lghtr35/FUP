@@ -30,6 +30,7 @@ namespace fup
             helper::socket_factory *socket_factory;
             boost::asio::ip::tcp::acceptor *acceptor;
             boost::asio::ip::udp::resolver *resolver;
+            boost::asio::ip::udp::socket *udp_socket;
         };
     }
 }

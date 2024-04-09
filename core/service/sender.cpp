@@ -79,7 +79,7 @@ namespace fup
             // Function to send ok to start udp data transfer
             int sender::send_ok()
             {
-                return send_tcp(new std::string("SEOK"));
+                return send_tcp(new std::string("OK"));
             }
 
             // Function to send a key over TCP socket

@@ -14,10 +14,11 @@ namespace fup
 
             file_manager::~file_manager() {}
 
-            std::ifstream *file_manager::open_file(std::string file_name)
+            std::ifstream *file_manager::open_file(std::string file_name, bool is_write = false)
             {
                 std::ifstream file;
-                file.open(files_location / std::filesystem::path(file_name), std::ios::in | std::ios::binary);
+                std::ios::openmode open_mode = is_write ? std::ios::out : std::ios::in;
+                file.open(files_location / std::filesystem::path(file_name), open_mode | std::ios::binary);
 
                 return &file;
             }

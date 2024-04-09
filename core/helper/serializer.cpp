@@ -47,7 +47,6 @@ namespace fup
                 template <typename T, typename = std::enable_if_t<std::is_base_of_v<fup::core::entity::serializable, T>>>
                 static std::vector<char> serialize_payload(const T &p)
                 {
-                    std::string message_identifier("SE");
                     std::vector<char> res(message_identifier.begin(), message_identifier.end());
                     res.add(p.serialize());
                     return res;

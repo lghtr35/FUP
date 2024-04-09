@@ -25,7 +25,12 @@ namespace fup
                 std::vector<char> fileNameLenBytes(sizeof(uint32_t));
                 std::memcpy(fileNameLenBytes.data(), &fileNameLenBE, sizeof(uint32_t));
 
-                return helper::serializer::concatenate_vectors<char>({isDownloadBytes,
+                // Add message prefix for identifying requests than resends
+                std::string message_prefix("SE");
+                std::vector<char> message_identifier(message_prefix.begin(), message_prefix.end());
+
+                return helper::serializer::concatenate_vectors<char>({message_identifier,
+                                                                      isDownloadBytes,
                                                                       fileNameLenBytes,
                                                                       std::vector<char>(file_name.begin(), file_name.end())});
             }

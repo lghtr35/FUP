@@ -17,7 +17,7 @@ namespace fup
             class file_manager
             {
             public:
-                std::ifstream *open_file(std::string file_name);
+                std::ifstream *open_file(std::string file_name, bool is_write = false);
                 fup::core::entity::metadata get_metadata(std::ifstream *fs, unsigned int file_packet_size, std::string file_name);
                 std::vector<char> get_file_bytes(std::ifstream *fs, unsigned int offset, unsigned int size);
                 size_t file_manager::get_file_size(std::ifstream *fs, std::string file_name);
