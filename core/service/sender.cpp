@@ -76,10 +76,10 @@ namespace fup
 
                 return bytesSent;
             }
-            // Function to send ok to start udp data transfer
-            int sender::send_ok()
+            // Function to send response to start udp data transfer
+            int sender::send_response(const entity::response &response)
             {
-                return send_tcp(new std::string("OK"));
+                return send_tcp(response);
             }
 
             // Function to send a key over TCP socket

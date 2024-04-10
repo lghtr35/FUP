@@ -24,7 +24,6 @@ namespace fup
 
                 ~connection_factory()
                 {
-                    // Dont delete io_context cause it is shared
                     for (int i = 0; i < connections.size(); i++)
                     {
                         delete connections[i];

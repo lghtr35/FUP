@@ -14,12 +14,12 @@ namespace fup
         {
         public:
             void run(int thread_count);
-            void listen();
+            void do_accept();
             void handle_accept(fup::core::connection *connection, const boost::system::error_code &error);
             void handle_handshake(fup::core::connection *connection);
             void handle_resend(fup::core::connection *connection);
-            void upload_file(fup::core::connection *connection, std::ifstream *file);
-            void download_file(fup::core::connection *connection, std::ifstream *file);
+            void upload_file(fup::core::connection *connection, std::fstream *file);
+            void download_file(fup::core::connection *connection, std::fstream *file);
             ~server();
             server();
 
@@ -31,6 +31,7 @@ namespace fup
             boost::asio::ip::tcp::acceptor *acceptor;
             boost::asio::ip::udp::resolver *resolver;
             boost::asio::ip::udp::socket *udp_socket;
+            boost::asio::io_context io_context;
         };
     }
 }

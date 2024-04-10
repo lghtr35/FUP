@@ -20,7 +20,7 @@ namespace fup
                 std::string receive_message_identifier();
                 fup::core::entity::request *receive_request();
                 fup::core::entity::packet *receive_packet();
-                bool receive_ok();
+                fup::core::entity::response *receive_response();
                 std::pair<int, int> receive_resend();
                 fup::core::entity::metadata *receive_metadata();
                 std::string receive_key();

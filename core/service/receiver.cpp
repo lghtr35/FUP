@@ -32,9 +32,7 @@ namespace fup
                 {
                     // Handle the error (e.g., log, throw an exception)
                     // For simplicity, let's just print the error message
-                    std::cerr << "Error receiving identifier: " << error.message() << std::endl;
-
-                    return nullptr;
+                    throw std::runtime_error("Error receiving identifier: " + error.message());
                 }
 
                 return std::string(received_data.begin(), received_data.end());
@@ -57,28 +55,16 @@ namespace fup
                 {
                     // Handle the error (e.g., log, throw an exception)
                     // For simplicity, let's just print the error message
-                    std::cerr << "Error receiving packet: " << error.message() << std::endl;
+                    throw std::runtime_error("Error receiving packet: " + error.message());
+                }
 
-                    // Clean up and return nullptr
-                    delete received_packet;
-                    return nullptr;
+                if (PACKET_FIXED_BUFFER_SIZE + metadata->file_packet_size != bytes_received)
+                {
+                    throw std::runtime_error("Error receiving packet: Not enough data has arrived");
                 }
 
                 // Deserialize the received data into the packet object
-                try
-                {
-                    received_packet->deserialize(received_data);
-                }
-                catch (const std::exception &e)
-                {
-                    // Handle deserialization error (e.g., log, throw an exception)
-                    // For simplicity, let's just print the error message
-                    std::cerr << "Error deserializing packet: " << e.what() << std::endl;
-
-                    // Clean up and return nullptr
-                    delete received_packet;
-                    return nullptr;
-                }
+                received_packet->deserialize(received_data);
 
                 // Return the received packet
                 return received_packet;
@@ -86,75 +72,10 @@ namespace fup
 
             std::pair<int, int> receiver::receive_resend()
             {
-                try
-                {
-                    std::array<char, RESEND_BUFFER_SIZE> buffer;
-                    // Receive data from the socket
-                    size_t bytesReceived = tcp_socket->receive(boost::asio::buffer(buffer));
-                    // Assuming the received data is a resend request in the format "RE<number>"
-                    std::string data(buffer.data(), bytesReceived);
-
-                    // 24-52
-                    std::pair<int, int> connection_id_seq_num_pair;
-                    int index = data.find("-");
-                    if (index == -1)
-                    {
-                        // Extreact the connection number from firts part
-                        int connection_number = std::stoi(data.substr(0, index));
-                        // Extract the sequence number from the rest of the string
-                        int sequence_number = std::stoi(data.substr(index + 1));
-                        // Return the extracted identifiers
-                        connection_id_seq_num_pair.first = connection_number;
-                        connection_id_seq_num_pair.second = sequence_number;
-                        return connection_id_seq_num_pair;
-                    }
-                    else
-                    {
-                        // If the received data does not start with "RE", log an error
-                        std::cerr << "Invalid resend request format: " << data << std::endl;
-                        // Return an appropriate error code or throw an exception
-                        throw std::runtime_error("Invalid resend request format");
-                    }
-                }
-                catch (const boost::system::system_error &e)
-                {
-                    std::cerr << "Receive resend error: " << e.what() << std::endl;
-                    throw std::runtime_error("Unknown request arrived");
-                }
-            }
-
-            entity::metadata *receiver::receive_metadata()
-            {
-                try
-                {
-                    std::vector<char> buffer(METADATA_BUFFER_SIZE);
-
-                    // Receive data from the socket
-                    size_t bytesReceived = tcp_socket->receive(boost::asio::buffer(buffer));
-
-                    entity::metadata *received_metadata = new entity::metadata();
-                    received_metadata->deserialize(buffer);
-                    metadata = received_metadata;
-                    // Return the received metadata object
-                    return received_metadata;
-                }
-                catch (const boost::system::system_error &e)
-                {
-                    // Log the error using std::cerr
-                    std::cerr << "Receive metadata error: " << e.what() << std::endl;
-
-                    throw std::runtime_error("Unknown request arrived");
-                }
-            }
-
-            std::string receiver::receive_key()
-            {
-                // Buffer to store received data
-                std::array<char, KEY_BUFFER_SIZE> buffer;
-
-                // Receive data from the TCP socket into the buffer
+                std::array<char, RESEND_BUFFER_SIZE> buffer;
+                // Receive data from the socket
                 boost::system::error_code error;
-                size_t bytesReceived = tcp_socket->read_some(boost::asio::buffer(buffer), error);
+                size_t bytes_received = tcp_socket->receive(boost::asio::buffer(buffer), 0, error);
 
                 // Check for errors
                 if (error)
@@ -163,16 +84,64 @@ namespace fup
                     throw std::runtime_error("Error receiving key: " + error.message());
                 }
 
-                // Convert received data to string
-                std::string receivedKey(buffer.data(), bytesReceived);
+                if (RESEND_BUFFER_SIZE != bytes_received)
+                {
+                    throw std::runtime_error("Error receiving response: Not enough data has arrived");
+                }
 
-                return receivedKey;
+                // Assuming the received data is a resend request in the format "<number>-<number>"
+                std::string data(buffer.data(), bytes_received);
+
+                std::pair<int, int> connection_id_seq_num_pair;
+                int index = data.find("-");
+                if (index == -1)
+                {
+                    // Extreact the connection number from firts part
+                    int connection_number = std::stoi(data.substr(0, index));
+                    // Extract the sequence number from the rest of the string
+                    int sequence_number = std::stoi(data.substr(index + 1));
+                    // Return the extracted identifiers
+                    connection_id_seq_num_pair.first = connection_number;
+                    connection_id_seq_num_pair.second = sequence_number;
+                    return connection_id_seq_num_pair;
+                }
+                else
+                {
+                    throw std::runtime_error("Error receiving resend: Invalid resend request format");
+                }
             }
 
-            bool receiver::receive_ok()
+            entity::metadata *receiver::receive_metadata()
+            {
+                std::vector<char> buffer(METADATA_FIXED_BUFFER_SIZE + 1024);
+
+                // Receive data from the socket
+                boost::system::error_code error;
+                size_t bytes_received = tcp_socket->receive(boost::asio::buffer(buffer), 0, error);
+
+                // Check for errors
+                if (error)
+                {
+                    // Handle error
+                    throw std::runtime_error("Error receiving metadata: " + error.message());
+                }
+
+                if (METADATA_FIXED_BUFFER_SIZE > bytes_received)
+                {
+                    throw std::runtime_error("Error receiving metadata: Not enough data has arrived");
+                }
+
+                entity::metadata *received_metadata = new entity::metadata();
+                received_metadata->deserialize(buffer);
+                metadata = received_metadata;
+                // Return the received metadata object
+                return received_metadata;
+            }
+
+            std::string receiver::receive_key()
             {
                 // Buffer to store received data
-                std::array<char, OK_BUFFER_SIZE> buffer;
+                std::array<char, KEY_BUFFER_SIZE> buffer;
 
                 // Receive data from the TCP socket into the buffer
                 boost::system::error_code error;
@@ -185,14 +154,42 @@ namespace fup
                     throw std::runtime_error("Error receiving key: " + error.message());
                 }
 
-                // Convert received data to string
-                std::string ok_string(buffer.data(), bytes_received);
-
-                if (ok_string == std::string("OK"))
+                if (KEY_BUFFER_SIZE != bytes_received)
                 {
-                    return true;
+                    throw std::runtime_error("Error receiving key: Not enough data has arrived");
                 }
-                return false;
+
+                // Convert received data to string
+                std::string receivedKey(buffer.data(), bytes_received);
+
+                return receivedKey;
+            }
+
+            entity::response *receiver::receive_response()
+            {
+                // Buffer to store received data
+                std::vector<char> buffer(RESPONSE_BUFFER_SIZE);
+
+                // Receive data from the TCP socket into the buffer
+                boost::system::error_code error;
+                size_t bytes_received = tcp_socket->receive(boost::asio::buffer(buffer), 0, error);
+
+                // Check for errors
+                if (error)
+                {
+                    throw std::runtime_error("Error receiving response: " + error.message());
+                }
+
+                if (RESPONSE_BUFFER_SIZE != bytes_received)
+                {
+                    throw std::runtime_error("Error receiving response: Not enough data has arrived");
+                }
+
+                // Convert received data to string
+                entity::response *response = new entity::response();
+                response->deserialize(buffer);
+
+                return response;
             }
         }
     }

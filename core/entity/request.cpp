@@ -12,26 +12,37 @@ namespace fup
             std::vector<char> request::serialize() const
             {
                 // Convert is_download to big-endian and copy
-                std::vector<char> packetSizeBytes(sizeof(unsigned int));
-                unsigned int packetSizeBE = htonl(packet_size);
-                std::memcpy(packetSizeBytes.data(), &packetSizeBE, sizeof(unsigned int));
+                std::vector<char> is_download_bytes(sizeof(bool));
+                std::memcpy(is_download_bytes.data(), &is_download, sizeof(bool));
+
+                std::vector<char> udp_port_bytes(sizeof(unsigned int));
+                unsigned int udp_port_be = htonl(udp_port);
+                std::memcpy(udp_port_bytes.data(), &udp_port_be, sizeof(unsigned int));
+
+                std::vector<char> connection_id_bytes(sizeof(unsigned int));
+                unsigned int connection_id_be = htonl(connection_id);
+                std::memcpy(connection_id_bytes.data(), &connection_id_be, sizeof(unsigned int));
 
                 // Convert is_download to big-endian and copy
-                std::vector<char> isDownloadBytes(sizeof(bool));
-                std::memcpy(isDownloadBytes.data(), &is_download, sizeof(bool));
+                std::vector<char> packet_size_bytes(sizeof(unsigned int));
+                unsigned int packet_size_be = htonl(packet_size);
+                std::memcpy(packet_size_bytes.data(), &packet_size_be, sizeof(unsigned int));
 
                 // Convert file_name length to big-endian and copy
-                uint32_t fileNameLenBE = htonl(file_name.size());
-                std::vector<char> fileNameLenBytes(sizeof(uint32_t));
-                std::memcpy(fileNameLenBytes.data(), &fileNameLenBE, sizeof(uint32_t));
+                uint32_t file_name_len_be = htonl(file_name.size());
+                std::vector<char> file_name_len_bytes(sizeof(uint32_t));
+                std::memcpy(file_name_len_bytes.data(), &file_name_len_be, sizeof(uint32_t));
 
                 // Add message prefix for identifying requests than resends
                 std::string message_prefix("SE");
                 std::vector<char> message_identifier(message_prefix.begin(), message_prefix.end());
 
                 return helper::serializer::concatenate_vectors<char>({message_identifier,
-                                                                      isDownloadBytes,
-                                                                      fileNameLenBytes,
+                                                                      is_download_bytes,
+                                                                      udp_port_bytes,
+                                                                      connection_id_bytes,
+                                                                      packet_size_bytes,
+                                                                      file_name_len_bytes,
                                                                       std::vector<char>(file_name.begin(), file_name.end())});
             }
 
@@ -42,6 +53,16 @@ namespace fup
                 // Deserialize is_download
                 std::memcpy(&is_download, data.data() + offset, sizeof(bool));
                 offset += sizeof(bool);
+
+                // Deserialize udp_port
+                std::memcpy(&udp_port, data.data() + offset, sizeof(unsigned int));
+                udp_port = ntohl(udp_port);
+                offset += sizeof(unsigned int);
+
+                // Deserialize connection_id
+                std::memcpy(&connection_id, data.data() + offset, sizeof(unsigned int));
+                connection_id = ntohl(connection_id);
+                offset += sizeof(unsigned int);
 
                 // Deserialize packet_size
                 std::memcpy(&packet_size, data.data() + offset, sizeof(unsigned int));

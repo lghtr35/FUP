@@ -25,8 +25,8 @@ namespace fup
                 int send_metadata(const entity::metadata &metadata);
                 int send_packet(const entity::packet &packet, boost::asio::ip::udp::endpoint &destination);
                 int send_request(const entity::request &request);
-                int send_resend(const int &connection_id,const int &package_number);
-                int send_ok();
+                int send_response(const entity::response &response);
+                int send_resend(const int &connection_id, const int &package_number);
                 sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<fup::core::interface::checksum> checksum);
                 ~sender();
 

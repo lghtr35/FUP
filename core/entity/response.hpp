@@ -1,11 +1,9 @@
 #pragma once
 
-#ifndef FUP_CORE_ENTITY_REQUEST_HPP
-#define FUP_CORE_ENTITY_REQUEST_HPP
-#include <vector>
-#include <string>
-#include <cstring>
+#ifndef FUP_CORE_ENTITY_RESPONSE_HPP
+#define FUP_CORE_ENTITY_RESPONSE_HPP
 #include <core/entity/serializable.hpp>
+#include <string>
 
 namespace fup
 {
@@ -13,19 +11,18 @@ namespace fup
     {
         namespace entity
         {
-            class request : fup::core::entity::serializable
+            class response : fup::core::entity::serializable
             {
             public:
-                request(){};
-                std::string file_name;
-                bool is_download;
+                response(){};
+                unsigned int status;
                 unsigned int udp_port;
                 unsigned int connection_id;
-                unsigned int packet_size;
                 std::vector<char> serialize() const override;
                 size_t deserialize(const std::vector<char> &data) override;
             };
         }
     }
 }
+
 #endif

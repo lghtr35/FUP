@@ -5,7 +5,7 @@ namespace fup
 {
     namespace facade
     {
-        void server::listen()
+        void server::do_accept()
         {
             fup::core::connection *connection = connection_factory->get_connection(&socket_factory->get_tcp(), &socket_factory->get_udp());
             acceptor->async_accept(*connection->get_tcp_socket(), std::bind(&fup::facade::server::handle_accept, this, connection, boost::asio::placeholders::error));
@@ -18,7 +18,7 @@ namespace fup
                 std::cout << "Accepted connection on: "
                           << connection->get_tcp_socket()->remote_endpoint().address().to_string()
                           << ":" << connection->get_tcp_socket()->remote_endpoint().port() << '\n';
-                connection->get_sender_service()->send_ok();
+
                 try
                 {
                     std::string message_identifier = connection->get_receiver_service()->receive_message_identifier();
@@ -38,7 +38,7 @@ namespace fup
                     std::cout << "An error occured: " << exception.what() << "\n";
                 }
             }
-            listen();
+            do_accept();
         }
 
         void server::handle_resend(fup::core::connection *connection)
@@ -52,7 +52,7 @@ namespace fup
             boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_tcp_socket()->remote_endpoint().port() - 1);
 
             connection = connection_factory->get_connection(connection_id);
-            std::ifstream *file = connection->get_file();
+            std::fstream *file = connection->get_file();
             int packet_size = connection->get_packet_size();
             int offset = packet_seq_num * packet_size;
             std::vector<char> bytes = file_manager->get_file_bytes(file, offset, packet_size);
@@ -68,17 +68,25 @@ namespace fup
         {
             fup::core::entity::request *request = connection->get_receiver_service()->receive_request();
             connection->set_packet_size(request->packet_size);
+            connection->set_remote_udp_port(request->udp_port);
+            connection->set_remote_connection_id(request->connection_id);
+
+            fup::core::entity::response response;
+            response.status = 0;
+            response.connection_id = connection->get_id();
+            response.udp_port = connection->get_udp_socket()->local_endpoint().port();
+            connection->get_sender_service()->send_response(response);
 
             if (request->is_download)
             {
-                std::ifstream *file = file_manager->open_file(request->file_name);
+                std::fstream *file = file_manager->open_file(request->file_name);
                 connection->set_file(file, request->file_name);
                 // We call server upload file because client wants to download a file so server should upload to the client
                 upload_file(connection, file);
             }
             else
             {
-                std::ifstream *file = file_manager->open_file(request->file_name, true);
+                std::fstream *file = file_manager->open_file(request->file_name, true);
                 connection->set_file(file, request->file_name);
                 // TODO implement upload file functionality
                 // Should be pretty much client side download op
@@ -87,20 +95,20 @@ namespace fup
             delete request;
         }
 
-        void server::upload_file(fup::core::connection *connection, std::ifstream *file)
+        void server::upload_file(fup::core::connection *connection, std::fstream *file)
         {
             fup::core::entity::metadata send_op_metadata = file_manager->get_metadata(file, connection->get_packet_size(), connection->get_file_name());
             connection->get_sender_service()->send_metadata(send_op_metadata);
 
             // Listening UDP port always going to be on tcp-1
-            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_tcp_socket()->remote_endpoint().port() - 1);
+            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_remote_udp_port());
             // Get a random available udp socket
             connection->get_udp_socket()->open(boost::asio::ip::udp::v4());
             // Read file while creating packets and send them to client
-            int seq_num = 0;
-            int packet_size = connection->get_packet_size();
-            int file_total_size = file_manager->get_file_size(file, connection->get_file_name());
-            int offset = 0;
+            unsigned int seq_num = 0;
+            unsigned int packet_size = connection->get_packet_size();
+            unsigned int file_total_size = file_manager->get_file_size(file, connection->get_file_name());
+            size_t offset = 0;
             while (offset <= file_total_size)
             {
                 fup::core::entity::header h;
@@ -115,10 +123,24 @@ namespace fup
             }
         }
 
-        void server::download_file(fup::core::connection *connection, std::ifstream *file)
+        void server::download_file(fup::core::connection *connection, std::fstream *file)
         {
-            // TODO think of a way to pass udp port nums to eachother
             fup::core::entity::metadata *metadata = connection->get_receiver_service()->receive_metadata();
+            size_t offset = 0;
+            unsigned int packet_size = connection->get_packet_size();
+            while (offset <= metadata->file_total_size)
+            {
+                fup::core::entity::packet *p = connection->get_receiver_service()->receive_packet();
+                if (!checksum_service->validate_checksum(p->body, p->header.checksum))
+                {
+                    connection->get_sender_service()->send_resend(connection->get_remote_connection_id(), p->header.packet_seq_num);
+                    offset = 0;
+                    continue;
+                }
+                offset += packet_size * p->header.packet_seq_num;
+                file->seekp(offset);
+                file->write(p->body.data(), p->body.size());
+            }
         }
     }
 }

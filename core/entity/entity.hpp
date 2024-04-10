@@ -7,4 +7,5 @@
 #include <core/entity/header.cpp>
 #include <core/entity/request.cpp>
 #include <core/entity/serializable.hpp>
+#include <core/entity/response.hpp>
 #endif

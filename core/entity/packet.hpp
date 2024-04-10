@@ -3,6 +3,7 @@
 #ifndef FUP_CORE_ENTITY_PACKET_HPP
 #define FUP_CORE_ENTITY_PACKET_HPP
 #include <vector>
+#include "header.hpp"
 
 namespace fup
 {
@@ -14,7 +15,7 @@ namespace fup
             {
             public:
                 packet(){};
-                explicit packet(header h, std::vector<char> b) : header(h), body(b) {};
+                explicit packet(header h, std::vector<char> b) : header(h), body(b){};
                 ~packet() = default;
                 header header;          // Fixed size
                 std::vector<char> body; // Variable amount of bytes. Will be preconfigured on server and client connection
