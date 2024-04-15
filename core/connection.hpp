@@ -14,7 +14,7 @@ namespace fup
         class connection
         {
         public:
-            connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<interface::checksum> checksum, unsigned int idx);
+            connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, unsigned int idx);
             ~connection();
             service::sender *get_sender_service();
             service::receiver *get_receiver_service();

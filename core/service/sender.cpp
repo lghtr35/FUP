@@ -7,11 +7,10 @@ namespace fup
     {
         namespace service
         {
-            sender::sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<fup::core::interface::checksum> checksum)
+            sender::sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp)
             {
                 tcp_socket = tcp;
                 udp_socket = udp;
-                checksum_service = checksum;
             }
 
             sender::~sender()

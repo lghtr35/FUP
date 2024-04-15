@@ -14,14 +14,14 @@ namespace fup
             class socket_factory
             {
             public:
-                socket_factory(boost::shared_ptr<boost::asio::io_context> ctx)
+                socket_factory(boost::asio::io_context &ctx)
                 {
-                    io_context = ctx;
+                    io_context = &ctx;
                 }
 
                 ~socket_factory()
                 {
-                    // Dont delete io_context cause it is shared
+                    // io_context memory should be managed on parent class
                 }
 
                 boost::asio::ip::udp::socket get_udp()
@@ -39,8 +39,7 @@ namespace fup
                     return boost::asio::ip::tcp::socket(*io_context);
                 }
 
-            private:
-                boost::shared_ptr<boost::asio::io_context> io_context;
+                boost::asio::io_context *io_context;
             };
         }
     }

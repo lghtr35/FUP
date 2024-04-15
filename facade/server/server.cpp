@@ -35,9 +35,18 @@ namespace fup
                 catch (std::exception exception)
                 {
                     // TODO think what to do in this scenario
+                    connection_factory->delete_connection(connection->get_id());
                     std::cout << "An error occured: " << exception.what() << "\n";
                 }
             }
+            else
+            {
+                // TODO think what to do in this scenario
+                connection_factory->delete_connection(connection->get_id());
+                std::cout << "An error occured: " << error.what() << "\n";
+            }
+
+            // Continue accepting
             do_accept();
         }
 
@@ -88,8 +97,6 @@ namespace fup
             {
                 std::fstream *file = file_manager->open_file(request->file_name, true);
                 connection->set_file(file, request->file_name);
-                // TODO implement upload file functionality
-                // Should be pretty much client side download op
                 download_file(connection, file);
             }
             delete request;
@@ -100,8 +107,7 @@ namespace fup
             fup::core::entity::metadata send_op_metadata = file_manager->get_metadata(file, connection->get_packet_size(), connection->get_file_name());
             connection->get_sender_service()->send_metadata(send_op_metadata);
 
-            // Listening UDP port always going to be on tcp-1
-            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_remote_udp_port());
+            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(connection->get_tcp_socket()->remote_endpoint().address(), connection->get_remote_udp_port());
             // Get a random available udp socket
             connection->get_udp_socket()->open(boost::asio::ip::udp::v4());
             // Read file while creating packets and send them to client
@@ -121,6 +127,8 @@ namespace fup
                 connection->get_sender_service()->send_packet(p, receiver_endpoint);
                 seq_num++;
             }
+
+            connection_factory->delete_connection(connection->get_id());
         }
 
         void server::download_file(fup::core::connection *connection, std::fstream *file)
@@ -141,6 +149,46 @@ namespace fup
                 file->seekp(offset);
                 file->write(p->body.data(), p->body.size());
             }
+
+            connection_factory->delete_connection(connection->get_id());
+        }
+
+        void server::run(int thread_count)
+        {
+            // Create a pool of threads to run the io_context.
+            std::vector<std::thread> threads;
+            threads.reserve(thread_count - 1);
+            for (std::size_t i = 0; i < thread_count; ++i)
+                threads.emplace_back([this]
+                                     { io_context.run(); });
+            io_context.run();
+
+            // Wait for all threads in the pool to exit.
+            for (std::size_t i = 0; i < threads.size(); ++i)
+                threads[i].join();
+        }
+
+        server::server(std::string file_location, int port)
+        {
+            // TODO in the future make this optional with different other checksum_services possible
+            checksum_service = new fup::core::service::blake3_checksum();
+            file_manager = new fup::facade::manager::file_manager(file_location);
+            connection_factory = new fup::facade::helper::connection_factory();
+            socket_factory = new fup::facade::helper::socket_factory(io_context);
+            acceptor = new boost::asio::ip::tcp::acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
+            resolver = new boost::asio::ip::udp::resolver(io_context);
+            udp_socket = new boost::asio::ip::udp::socket(io_context);
+        }
+
+        server::~server()
+        {
+            delete checksum_service;
+            delete file_manager;
+            delete connection_factory;
+            delete socket_factory;
+            delete acceptor;
+            delete resolver;
+            delete udp_socket;
         }
     }
 }

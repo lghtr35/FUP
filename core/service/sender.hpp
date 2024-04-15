@@ -10,7 +10,6 @@
 #include <BLAKE3/c/blake3.h>
 #include <core/entity/entity.hpp>
 #include <core/helper/helper.hpp>
-#include <core/interface/checksum.hpp>
 
 namespace fup
 {
@@ -27,7 +26,7 @@ namespace fup
                 int send_request(const entity::request &request);
                 int send_response(const entity::response &response);
                 int send_resend(const int &connection_id, const int &package_number);
-                sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<fup::core::interface::checksum> checksum);
+                sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp);
                 ~sender();
 
             private:
@@ -38,7 +37,6 @@ namespace fup
 
                 boost::asio::ip::tcp::socket *tcp_socket;
                 boost::asio::ip::udp::socket *udp_socket;
-                boost::shared_ptr<interface::checksum> checksum_service;
             };
         }
     }

@@ -15,7 +15,7 @@ namespace fup
     {
         namespace service
         {
-            class blake3_checksum : interface::checksum
+            class blake3_checksum : public interface::checksum
             {
             public:
                 blake3_checksum()

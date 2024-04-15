@@ -5,10 +5,10 @@ namespace fup
 {
     namespace core
     {
-        connection::connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, boost::shared_ptr<core::interface::checksum> checksum, unsigned int idx)
+        connection::connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, unsigned int idx)
         {
-            receiver_service = new fup::core::service::receiver(tcp, udp, checksum);
-            sender_service = new fup::core::service::sender(tcp, udp, checksum);
+            receiver_service = new fup::core::service::receiver(tcp, udp);
+            sender_service = new fup::core::service::sender(tcp, udp);
             tcp_socket = tcp;
             udp_socket = udp;
             id = idx;

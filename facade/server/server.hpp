@@ -21,7 +21,7 @@ namespace fup
             void upload_file(fup::core::connection *connection, std::fstream *file);
             void download_file(fup::core::connection *connection, std::fstream *file);
             ~server();
-            server();
+            server(std::string file_location, int port);
 
         private:
             core::interface::checksum *checksum_service;
