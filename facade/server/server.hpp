@@ -3,6 +3,7 @@
 #define FUP_FACADE_SERVER_HPP
 #include <core/core.hpp>
 #include <fstream>
+#include <thread>
 #include "./helper/helper.hpp"
 #include "./manager/file_manager.hpp"
 

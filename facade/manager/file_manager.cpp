@@ -26,6 +26,7 @@ namespace fup
             void file_manager::close_file(std::fstream *fs)
             {
                 fs->close();
+                delete fs;
             }
 
             std::string file_manager::get_file_extension(std::string file_name)

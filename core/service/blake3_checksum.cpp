@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <string>
+#include <mutex>
 #include <BLAKE3/c/blake3.h>
 #include <core/helper/constants.hpp>
 #include <core/entity/serializable.hpp>
@@ -30,17 +31,19 @@ namespace fup
 
                 bool validate_checksum(std::vector<char> &data, std::vector<char> &checksum)
                 {
+                    mutex.lock();
                     // Calculate the checksum for the data
                     blake3_hasher_update(hasher, data.data(), data.size());
                     std::vector<uint8_t> calculated_checksum(BLAKE3_OUT_LEN);
                     blake3_hasher_finalize(hasher, calculated_checksum.data(), BLAKE3_OUT_LEN);
-
+                    mutex.unlock();
                     // Compare the calculated checksum with the provided checksum
                     return std::memcmp(calculated_checksum.data(), checksum.data(), BLAKE3_OUT_LEN) == 0;
                 }
 
                 std::vector<char> create_checksum(std::vector<char> &data)
                 {
+                    mutex.lock();
                     // Calculate the checksum for the data
                     blake3_hasher_update(hasher, data.data(), data.size());
                     std::vector<uint8_t> checksum(BLAKE3_OUT_LEN);
@@ -51,11 +54,13 @@ namespace fup
                     {
                         res[i] = (char)checksum[i];
                     }
+                    mutex.unlock();
                     return res;
                 }
 
             private:
                 blake3_hasher *hasher;
+                std::mutex mutex;
             };
         }
     }

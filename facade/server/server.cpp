@@ -9,6 +9,7 @@ namespace fup
         {
             fup::core::connection *connection = connection_factory->get_connection(&socket_factory->get_tcp(), &socket_factory->get_udp());
             acceptor->async_accept(*connection->get_tcp_socket(), std::bind(&fup::facade::server::handle_accept, this, connection, boost::asio::placeholders::error));
+            delete connection;
         }
 
         void server::handle_accept(fup::core::connection *connection, const boost::system::error_code &error)
@@ -71,6 +72,7 @@ namespace fup
             h.body_length = bytes.size();
             fup::core::entity::packet p(h, bytes);
             connection->get_sender_service()->send_packet(p, receiver_endpoint);
+            file_manager->close_file(file);
         }
 
         void server::handle_handshake(fup::core::connection *connection)
@@ -135,22 +137,25 @@ namespace fup
         {
             fup::core::entity::metadata *metadata = connection->get_receiver_service()->receive_metadata();
             size_t offset = 0;
+            size_t received_bytes = 0;
             unsigned int packet_size = connection->get_packet_size();
-            while (offset <= metadata->file_total_size)
+            while (received_bytes <= metadata->file_total_size)
             {
-                fup::core::entity::packet *p = connection->get_receiver_service()->receive_packet();
-                if (!checksum_service->validate_checksum(p->body, p->header.checksum))
+                fup::core::entity::packet p = *connection->get_receiver_service()->receive_packet();
+                if (!checksum_service->validate_checksum(p.body, p.header.checksum) || p.header.body_length != p.body.size())
                 {
-                    connection->get_sender_service()->send_resend(connection->get_remote_connection_id(), p->header.packet_seq_num);
+                    connection->get_sender_service()->send_resend(connection->get_remote_connection_id(), p.header.packet_seq_num);
                     offset = 0;
                     continue;
                 }
-                offset += packet_size * p->header.packet_seq_num;
+                offset = packet_size * p.header.packet_seq_num;
                 file->seekp(offset);
-                file->write(p->body.data(), p->body.size());
+                file->write(p.body.data(), p.body.size());
+                received_bytes += p.header.body_length;
             }
 
             connection_factory->delete_connection(connection->get_id());
+            delete metadata;
         }
 
         void server::run(int thread_count)
