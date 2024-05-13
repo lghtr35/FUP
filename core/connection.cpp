@@ -37,9 +37,9 @@ namespace fup
             return sender_service;
         }
 
-        unsigned int connection::get_packet_size()
+        unsigned int connection::get_package_size()
         {
-            return packet_size;
+            return package_size;
         }
 
         unsigned int connection::get_id()
@@ -77,9 +77,9 @@ namespace fup
             return file_name;
         }
 
-        void connection::set_packet_size(unsigned int ps)
+        void connection::set_package_size(unsigned int ps)
         {
-            packet_size = ps;
+            package_size = ps;
         }
 
         void connection::set_file(std::fstream *file_to_use, std::string file_name_to_use)

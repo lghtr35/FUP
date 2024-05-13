@@ -5,6 +5,21 @@ namespace fup
 {
     namespace facade
     {
+        void server::run(int thread_count)
+        {
+            // Create a pool of threads to run the io_context.
+            std::vector<std::thread> threads;
+            threads.reserve(thread_count - 1);
+            for (std::size_t i = 0; i < thread_count; ++i)
+                threads.emplace_back([this]
+                                     { io_context.run(); });
+            io_context.run();
+
+            // Wait for all threads in the pool to exit.
+            for (std::size_t i = 0; i < threads.size(); ++i)
+                threads[i].join();
+        }
+
         void server::do_accept()
         {
             fup::core::connection *connection = connection_factory->get_connection(&socket_factory->get_tcp(), &socket_factory->get_udp());
@@ -55,30 +70,29 @@ namespace fup
         {
             std::pair<int, int> pair = connection->get_receiver_service()->receive_resend();
             int connection_id = pair.first;
-            int packet_seq_num = pair.second;
+            int package_seq_num = pair.second;
             delete connection;
 
-            // Listening UDP port always going to be on tcp-1
-            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_tcp_socket()->remote_endpoint().port() - 1);
+            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_remote_udp_port());
 
             connection = connection_factory->get_connection(connection_id);
             std::fstream *file = connection->get_file();
-            int packet_size = connection->get_packet_size();
-            int offset = packet_seq_num * packet_size;
-            std::vector<char> bytes = file_manager->get_file_bytes(file, offset, packet_size);
+            int package_size = connection->get_package_size();
+            int offset = package_seq_num * package_size;
+            std::vector<char> bytes = file_manager->get_file_bytes(file, offset, package_size);
             fup::core::entity::header h;
-            h.packet_seq_num = packet_seq_num;
+            h.package_seq_num = package_seq_num;
             h.checksum = checksum_service->create_checksum(bytes);
             h.body_length = bytes.size();
-            fup::core::entity::packet p(h, bytes);
-            connection->get_sender_service()->send_packet(p, receiver_endpoint);
+            fup::core::entity::package p(h, bytes);
+            connection->get_sender_service()->send_package(p, receiver_endpoint);
             file_manager->close_file(file);
         }
 
         void server::handle_handshake(fup::core::connection *connection)
         {
             fup::core::entity::request *request = connection->get_receiver_service()->receive_request();
-            connection->set_packet_size(request->packet_size);
+            connection->set_package_size(request->package_size);
             connection->set_remote_udp_port(request->udp_port);
             connection->set_remote_connection_id(request->connection_id);
 
@@ -106,78 +120,27 @@ namespace fup
 
         void server::upload_file(fup::core::connection *connection, std::fstream *file)
         {
-            fup::core::entity::metadata send_op_metadata = file_manager->get_metadata(file, connection->get_packet_size(), connection->get_file_name());
+            fup::core::entity::metadata send_op_metadata = file_manager->get_metadata(file, connection->get_package_size(), connection->get_file_name());
             connection->get_sender_service()->send_metadata(send_op_metadata);
-
-            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(connection->get_tcp_socket()->remote_endpoint().address(), connection->get_remote_udp_port());
-            // Get a random available udp socket
-            connection->get_udp_socket()->open(boost::asio::ip::udp::v4());
-            // Read file while creating packets and send them to client
-            unsigned int seq_num = 0;
-            unsigned int packet_size = connection->get_packet_size();
-            unsigned int file_total_size = file_manager->get_file_size(file, connection->get_file_name());
-            size_t offset = 0;
-            while (offset <= file_total_size)
-            {
-                fup::core::entity::header h;
-                offset = seq_num * packet_size;
-                std::vector<char> bytes = file_manager->get_file_bytes(file, offset, packet_size);
-                h.body_length = bytes.size();
-                h.packet_seq_num = seq_num;
-                h.checksum = checksum_service->create_checksum(bytes);
-                fup::core::entity::packet p(h, bytes);
-                connection->get_sender_service()->send_packet(p, receiver_endpoint);
-                seq_num++;
-            }
+            fup::facade::manager::upload_download_manager::upload_file(connection, checksum_service, file_manager, file);
 
             connection_factory->delete_connection(connection->get_id());
+            file_manager->close_file(file);
         }
 
         void server::download_file(fup::core::connection *connection, std::fstream *file)
         {
-            fup::core::entity::metadata *metadata = connection->get_receiver_service()->receive_metadata();
-            size_t offset = 0;
-            size_t received_bytes = 0;
-            unsigned int packet_size = connection->get_packet_size();
-            while (received_bytes <= metadata->file_total_size)
-            {
-                fup::core::entity::packet p = *connection->get_receiver_service()->receive_packet();
-                if (!checksum_service->validate_checksum(p.body, p.header.checksum) || p.header.body_length != p.body.size())
-                {
-                    connection->get_sender_service()->send_resend(connection->get_remote_connection_id(), p.header.packet_seq_num);
-                    offset = 0;
-                    continue;
-                }
-                offset = packet_size * p.header.packet_seq_num;
-                file->seekp(offset);
-                file->write(p.body.data(), p.body.size());
-                received_bytes += p.header.body_length;
-            }
-
+            fup::facade::manager::upload_download_manager::download_file(connection, checksum_service, file);
             connection_factory->delete_connection(connection->get_id());
-            delete metadata;
+            file_manager->close_file(file);
         }
 
-        void server::run(int thread_count)
-        {
-            // Create a pool of threads to run the io_context.
-            std::vector<std::thread> threads;
-            threads.reserve(thread_count - 1);
-            for (std::size_t i = 0; i < thread_count; ++i)
-                threads.emplace_back([this]
-                                     { io_context.run(); });
-            io_context.run();
-
-            // Wait for all threads in the pool to exit.
-            for (std::size_t i = 0; i < threads.size(); ++i)
-                threads[i].join();
-        }
-
-        server::server(std::string file_location, int port)
+        server::server(int port, manager::file_manager *file_manager_injected = nullptr, fup::core::interface::checksum *checksum_injected = nullptr)
         {
             // TODO in the future make this optional with different other checksum_services possible
-            checksum_service = new fup::core::service::blake3_checksum();
-            file_manager = new fup::facade::manager::file_manager(file_location);
+            checksum_service = (checksum_injected == nullptr) ? new fup::core::service::blake3_checksum() : checksum_injected;
+            file_manager = (file_manager_injected == nullptr) ? new fup::facade::manager::file_manager("/") : file_manager_injected;
+
             connection_factory = new fup::facade::helper::connection_factory();
             socket_factory = new fup::facade::helper::socket_factory(io_context);
             acceptor = new boost::asio::ip::tcp::acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));

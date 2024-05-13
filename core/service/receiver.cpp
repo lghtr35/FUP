@@ -37,15 +37,15 @@ namespace fup
                 return std::string(received_data.begin(), received_data.end());
             }
 
-            fup::core::entity::packet *receiver::receive_packet()
+            fup::core::entity::package *receiver::receive_package()
             {
-                // Create a packet object to store received data
-                fup::core::entity::packet *received_packet = new fup::core::entity::packet();
+                // Create a package object to store received data
+                fup::core::entity::package *received_package = new fup::core::entity::package();
 
-                // Reserve space for receiving packet data using already obtained package size
-                std::vector<char> received_data(metadata->file_packet_size + PACKET_FIXED_BUFFER_SIZE);
+                // Reserve space for receiving package data using already obtained package size
+                std::vector<char> received_data(metadata->file_package_size + PACKAGE_FIXED_BUFFER_SIZE);
 
-                // Receive packet data from the UDP socket
+                // Receive package data from the UDP socket
                 boost::system::error_code error;
                 size_t bytes_received = udp_socket->receive(boost::asio::buffer(received_data), 0, error);
 
@@ -54,19 +54,19 @@ namespace fup
                 {
                     // Handle the error (e.g., log, throw an exception)
                     // For simplicity, let's just print the error message
-                    throw std::runtime_error("Error receiving packet: " + error.message());
+                    throw std::runtime_error("Error receiving package: " + error.message());
                 }
 
-                if (PACKET_FIXED_BUFFER_SIZE + metadata->file_packet_size != bytes_received)
+                if (PACKAGE_FIXED_BUFFER_SIZE + metadata->file_package_size != bytes_received)
                 {
-                    throw std::runtime_error("Error receiving packet: Not enough data has arrived");
+                    throw std::runtime_error("Error receiving package: Not enough data has arrived");
                 }
 
-                // Deserialize the received data into the packet object
-                received_packet->deserialize(received_data);
+                // Deserialize the received data into the package object
+                received_package->deserialize(received_data);
 
-                // Return the received packet
-                return received_packet;
+                // Return the received package
+                return received_package;
             }
 
             std::pair<int, int> receiver::receive_resend()

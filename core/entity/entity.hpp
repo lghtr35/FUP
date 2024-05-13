@@ -2,7 +2,7 @@
 
 #ifndef FUP_CORE_ENTITY_HPP
 #define FUP_CORE_ENTITY_HPP
-#include <core/entity/packet.cpp>
+#include <core/entity/package.cpp>
 #include <core/entity/metadata.cpp>
 #include <core/entity/header.cpp>
 #include <core/entity/request.cpp>

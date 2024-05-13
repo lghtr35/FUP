@@ -5,6 +5,7 @@
 #include <fstream>
 #include "./helper/helper.hpp"
 #include "./manager/file_manager.hpp"
+#include "./manager/upload_download_manager.cpp"
 
 namespace fup
 {
@@ -13,15 +14,16 @@ namespace fup
         class client
         {
         public:
-            void connect(std::string address, unsigned int port);
-            void initiate_handshake(fup::core::connection *connection);
-            void handle_resend(fup::core::connection *connection);
-            void upload_file(fup::core::connection *connection, std::fstream *file);
-            void download_file(fup::core::connection *connection, std::fstream *file);
+            void upload_file(std::string address, std::string path_to_file, int package_size);
+            void download_file(std::string address, std::string file_name, int package_size);
             ~client();
             client(std::string file_location, int port);
 
         private:
+            fup::core::connection *connect(std::string address, std::string file_name, bool is_download, int package_size);
+            void initiate_handshake(fup::core::connection *connection, std::string file_name, bool is_download, int package_size);
+            void handle_resend(fup::core::connection *connection);
+
             core::interface::checksum *checksum_service;
             manager::file_manager *file_manager;
             helper::connection_factory *connection_factory;

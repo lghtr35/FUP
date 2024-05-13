@@ -93,10 +93,10 @@ namespace fup
                 return send_tcp(metadata);
             }
 
-            // Function to send a packet over UDP socket
-            int sender::send_packet(const entity::packet &packet, boost::asio::ip::udp::endpoint &destination)
+            // Function to send a package over UDP socket
+            int sender::send_package(const entity::package &package, boost::asio::ip::udp::endpoint &destination)
             {
-                return send_udp(packet, destination);
+                return send_udp(package, destination);
             }
 
             // Function to send a resend request over TCP socket

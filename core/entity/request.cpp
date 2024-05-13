@@ -24,9 +24,9 @@ namespace fup
                 std::memcpy(connection_id_bytes.data(), &connection_id_be, sizeof(unsigned int));
 
                 // Convert is_download to big-endian and copy
-                std::vector<char> packet_size_bytes(sizeof(unsigned int));
-                unsigned int packet_size_be = htonl(packet_size);
-                std::memcpy(packet_size_bytes.data(), &packet_size_be, sizeof(unsigned int));
+                std::vector<char> package_size_bytes(sizeof(unsigned int));
+                unsigned int package_size_be = htonl(package_size);
+                std::memcpy(package_size_bytes.data(), &package_size_be, sizeof(unsigned int));
 
                 // Convert file_name length to big-endian and copy
                 uint32_t file_name_len_be = htonl(file_name.size());
@@ -41,7 +41,7 @@ namespace fup
                                                                       is_download_bytes,
                                                                       udp_port_bytes,
                                                                       connection_id_bytes,
-                                                                      packet_size_bytes,
+                                                                      package_size_bytes,
                                                                       file_name_len_bytes,
                                                                       std::vector<char>(file_name.begin(), file_name.end())});
             }
@@ -64,9 +64,9 @@ namespace fup
                 connection_id = ntohl(connection_id);
                 offset += sizeof(unsigned int);
 
-                // Deserialize packet_size
-                std::memcpy(&packet_size, data.data() + offset, sizeof(unsigned int));
-                packet_size = ntohl(packet_size);
+                // Deserialize package_size
+                std::memcpy(&package_size, data.data() + offset, sizeof(unsigned int));
+                package_size = ntohl(package_size);
                 offset += sizeof(unsigned int);
 
                 // Deserialize file_name length

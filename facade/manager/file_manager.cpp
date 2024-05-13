@@ -38,9 +38,9 @@ namespace fup
                 }
                 return file_name;
             }
-            fup::core::entity::metadata file_manager::get_metadata(std::fstream *fs, unsigned int file_packet_size, std::string file_name)
+            fup::core::entity::metadata file_manager::get_metadata(std::fstream *fs, unsigned int file_package_size, std::string file_name)
             {
-                return fup::core::entity::metadata(file_packet_size,
+                return fup::core::entity::metadata(file_package_size,
                                                    get_file_size(fs, file_name),
                                                    file_name,
                                                    get_file_extension(file_name));

@@ -30,8 +30,15 @@ namespace fup
                 fup::core::connection *get_connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp)
                 {
                     mutex.lock();
-                    fup::core::connection *connection = new fup::core::connection(tcp, udp, ++connection_count);
-                    connections[connection_count] = connection;
+                    int free_id = 0;
+                    for (int free_id; free_id < connections.size(); free_id++)
+                    {
+                        if (connections[free_id] == nullptr)
+                            break;
+                    }
+                    fup::core::connection *connection = new fup::core::connection(tcp, udp, free_id);
+                    connections[free_id] = connection;
+                    connection_count++;
                     mutex.unlock();
                     return connection;
                 }

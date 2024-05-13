@@ -25,10 +25,10 @@ namespace fup
             std::streampos get_file_end();
             std::string get_file_name();
             unsigned int get_id();
-            unsigned int get_packet_size();
+            unsigned int get_package_size();
             unsigned int get_remote_udp_port();
             unsigned int get_remote_connection_id();
-            void set_packet_size(unsigned int ps);
+            void set_package_size(unsigned int ps);
             void set_file(std::fstream *file_to_use, std::string file_name_to_use);
             void set_remote_udp_port(unsigned int port);
             void set_remote_connection_id(unsigned int id);
@@ -43,7 +43,7 @@ namespace fup
             std::fstream *file;
             std::streampos file_end;
             unsigned int id;
-            unsigned int packet_size;
+            unsigned int package_size;
             unsigned int remote_udp_port;
             unsigned int remote_connection_id;
         };

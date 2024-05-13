@@ -22,7 +22,7 @@ namespace fup
             public:
                 int send_key(const std::string key);
                 int send_metadata(const entity::metadata &metadata);
-                int send_packet(const entity::packet &packet, boost::asio::ip::udp::endpoint &destination);
+                int send_package(const entity::package &package, boost::asio::ip::udp::endpoint &destination);
                 int send_request(const entity::request &request);
                 int send_response(const entity::response &response);
                 int send_resend(const int &connection_id, const int &package_number);

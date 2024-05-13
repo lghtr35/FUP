@@ -21,7 +21,7 @@ namespace fup
                 bool is_download;
                 unsigned int udp_port;
                 unsigned int connection_id;
-                unsigned int packet_size;
+                unsigned int package_size;
                 std::vector<char> serialize() const override;
                 size_t deserialize(const std::vector<char> &data) override;
             };

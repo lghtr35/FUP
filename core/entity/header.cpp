@@ -17,9 +17,9 @@ namespace fup
                 // Copy the 'checksum' data
                 std::memcpy(serializedData.data(), checksum.data(), 32);
 
-                // Convert 'packet_seq_num' to big-endian and copy
-                int packetSeqNumBE = htonl(packet_seq_num);
-                std::memcpy(serializedData.data() + 32, &packetSeqNumBE, sizeof(int));
+                // Convert 'package_seq_num' to big-endian and copy
+                int packageSeqNumBE = htonl(package_seq_num);
+                std::memcpy(serializedData.data() + 32, &packageSeqNumBE, sizeof(int));
 
                 // Convert 'body_length' to big-endian and copy
                 int bodyLengthBE = htonl(body_length);
@@ -37,9 +37,9 @@ namespace fup
                 // Copy the 'checksum' data
                 std::memcpy(checksum.data(), data.data(), 32);
 
-                // Copy 'packet_seq_num' and 'body_length' and convert to host endian
-                std::memcpy(&packet_seq_num, data.data() + 32, sizeof(int));
-                packet_seq_num = ntohl(packet_seq_num);
+                // Copy 'package_seq_num' and 'body_length' and convert to host endian
+                std::memcpy(&package_seq_num, data.data() + 32, sizeof(int));
+                package_seq_num = ntohl(package_seq_num);
 
                 std::memcpy(&body_length, data.data() + 32 + sizeof(int), sizeof(int));
                 body_length = ntohl(body_length);

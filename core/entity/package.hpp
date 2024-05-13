@@ -1,9 +1,10 @@
 #pragma once
 
-#ifndef FUP_CORE_ENTITY_PACKET_HPP
-#define FUP_CORE_ENTITY_PACKET_HPP
+#ifndef FUP_CORE_ENTITY_PACKAGE_HPP
+#define FUP_CORE_ENTITY_PACKAGE_HPP
 #include <vector>
 #include "header.hpp"
+#include <core/helper/helper.hpp>
 
 namespace fup
 {
@@ -11,12 +12,12 @@ namespace fup
     {
         namespace entity
         {
-            class packet : serializable
+            class package : serializable
             {
             public:
-                packet(){};
-                explicit packet(header h, std::vector<char> b) : header(h), body(b){};
-                ~packet() = default;
+                package(){};
+                explicit package(header h, std::vector<char> b) : header(h), body(b){};
+                ~package() = default;
                 header header;          // Fixed size
                 std::vector<char> body; // Variable amount of bytes. Will be preconfigured on server and client connection
                 std::vector<char> serialize() const override;
