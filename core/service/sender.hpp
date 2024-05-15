@@ -8,8 +8,7 @@
 #include <boost/asio.hpp>
 #include <boost/system/error_code.hpp>
 #include <BLAKE3/c/blake3.h>
-#include <core/entity/entity.hpp>
-#include <core/helper/helper.hpp>
+#include "core/entity/entity.hpp"
 
 namespace fup
 {

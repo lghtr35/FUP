@@ -2,6 +2,7 @@
 
 #ifndef FUP_CORE_ENTITY_HEADER_HPP
 #define FUP_CORE_ENTITY_HEADER_HPP
+#include "serializable.hpp"
 
 namespace fup
 {
@@ -9,7 +10,7 @@ namespace fup
     {
         namespace entity
         {
-            class header : serializable
+            class header : public fup::core::entity::serializable
             {
             public:
                 header(){};

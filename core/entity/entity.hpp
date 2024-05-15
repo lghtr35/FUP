@@ -2,10 +2,11 @@
 
 #ifndef FUP_CORE_ENTITY_HPP
 #define FUP_CORE_ENTITY_HPP
-#include <core/entity/package.cpp>
-#include <core/entity/metadata.cpp>
-#include <core/entity/header.cpp>
-#include <core/entity/request.cpp>
-#include <core/entity/serializable.hpp>
-#include <core/entity/response.hpp>
+#include "package.hpp"
+#include "metadata.hpp"
+#include "header.hpp"
+#include "request.hpp"
+#include "serializable.hpp"
+#include "response.hpp"
+#include "serializer.hpp"
 #endif

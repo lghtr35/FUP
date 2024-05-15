@@ -1,9 +1,5 @@
-#pragma once
 
-#include <vector>
-#include <cstring>
-#include <core/entity/metadata.hpp>
-#include <core/helper/helper.hpp>
+#include "metadata.hpp"
 
 namespace fup
 {
@@ -34,12 +30,12 @@ namespace fup
                 std::memcpy(fileExtensionLenBytes.data(), &fileExtensionLenBE, sizeof(uint32_t));
 
                 // Concatenate all byte vectors
-                return helper::serializer::concatenate_vectors<char>({packageSizeBytes,
-                                                                      totalSizeBytes,
-                                                                      fileNameLenBytes,
-                                                                      std::vector<char>(file_name.begin(), file_name.end()),
-                                                                      fileExtensionLenBytes,
-                                                                      std::vector<char>(file_extension.begin(), file_extension.end())});
+                return fup::core::entity::serializer::concatenate_vectors<char>({packageSizeBytes,
+                                                                                 totalSizeBytes,
+                                                                                 fileNameLenBytes,
+                                                                                 std::vector<char>(file_name.begin(), file_name.end()),
+                                                                                 fileExtensionLenBytes,
+                                                                                 std::vector<char>(file_extension.begin(), file_extension.end())});
             }
 
             size_t metadata::deserialize(const std::vector<char> &data)
@@ -64,7 +60,7 @@ namespace fup
 
                 // Deserialize file_name
                 file_name.resize(fileNameLen);
-                std::memcpy(file_name.data(), data.data() + offset, fileNameLen);
+                std::memcpy(&file_name[0], data.data() + offset, fileNameLen);
                 offset += fileNameLen;
 
                 // Deserialize file_extension length
@@ -75,7 +71,7 @@ namespace fup
 
                 // Deserialize file_extension
                 file_extension.resize(fileExtensionLen);
-                std::memcpy(file_extension.data(), data.data() + offset, fileExtensionLen);
+                std::memcpy(&file_extension[0], data.data() + offset, fileExtensionLen);
                 offset += fileExtensionLen;
 
                 return offset;

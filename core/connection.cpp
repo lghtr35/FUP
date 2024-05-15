@@ -1,4 +1,4 @@
-#pragma once
+
 #include "connection.hpp"
 
 namespace fup

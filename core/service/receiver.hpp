@@ -1,11 +1,11 @@
 #pragma once
 #ifndef FUP_CORE_SERVICE_RECEIVER_HPP
 #define FUP_CORE_SERVICE_RECEIVER_HPP
-#include <core/entity/entity.hpp>
-#include <core/helper/helper.hpp>
+#include "core/entity/entity.hpp"
 #include <iostream>
 #include <BLAKE3/c/blake3.h>
 #include <boost/asio.hpp>
+#include "interface/constants.hpp"
 
 namespace fup
 {
@@ -24,7 +24,7 @@ namespace fup
                 fup::core::entity::metadata *receive_metadata();
                 std::string receive_key();
                 receiver(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp);
-                ~receiver(){};
+                ~receiver();
 
             private:
                 fup::core::entity::metadata *metadata;

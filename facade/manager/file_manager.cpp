@@ -1,4 +1,4 @@
-#pragma once
+
 #include "file_manager.hpp"
 
 namespace fup
@@ -14,13 +14,13 @@ namespace fup
 
             file_manager::~file_manager() {}
 
-            std::fstream *file_manager::open_file(std::string file_name, bool is_write = false)
+            std::fstream *file_manager::open_file(std::string file_name, bool is_write)
             {
-                std::fstream file;
+                std::fstream *file = new std::fstream();
                 std::ios::openmode open_mode = is_write ? std::ios::out : std::ios::in;
-                file.open(files_location / std::filesystem::path(file_name), open_mode | std::ios::binary);
+                file->open(files_location / std::filesystem::path(file_name), open_mode | std::ios::binary);
 
-                return &file;
+                return file;
             }
 
             void file_manager::close_file(std::fstream *fs)

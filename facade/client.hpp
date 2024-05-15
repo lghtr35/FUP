@@ -1,11 +1,11 @@
 #pragma once
 #ifndef FUP_FACADE_CLIENT_HPP
 #define FUP_FACADE_CLIENT_HPP
-#include <core/core.hpp>
+#include "core/core.hpp"
 #include <fstream>
-#include "./helper/helper.hpp"
-#include "./manager/file_manager.hpp"
-#include "./manager/upload_download_manager.cpp"
+#include "helper/helper.hpp"
+#include "manager/file_manager.hpp"
+#include "manager/upload_download_manager.hpp"
 
 namespace fup
 {

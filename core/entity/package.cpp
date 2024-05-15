@@ -1,7 +1,5 @@
-#pragma once
 
-#include <cstring>
-#include <core/entity/package.hpp>
+#include "package.hpp"
 
 namespace fup
 {
@@ -12,7 +10,7 @@ namespace fup
             std::vector<char> package::serialize() const
             {
                 std::vector<char> header_bytes = header.serialize();
-                return helper::serializer::concatenate_vectors<char>({header_bytes, body});
+                return fup::core::entity::serializer::concatenate_vectors<char>({header_bytes, body});
             }
 
             size_t package::deserialize(const std::vector<char> &data)

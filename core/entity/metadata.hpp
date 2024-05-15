@@ -3,6 +3,10 @@
 #ifndef FUP_CORE_ENTITY_METADATA_HPP
 #define FUP_CORE_ENTITY_METADATA_HPP
 #include <string>
+#include <vector>
+#include <cstring>
+#include "serializer.hpp"
+#include "serializable.hpp"
 
 namespace fup
 {
@@ -10,7 +14,7 @@ namespace fup
     {
         namespace entity
         {
-            class metadata : serializable
+            class metadata : public fup::core::entity::serializable
             {
             public:
                 metadata(){};

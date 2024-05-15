@@ -3,8 +3,10 @@
 #ifndef FUP_CORE_ENTITY_PACKAGE_HPP
 #define FUP_CORE_ENTITY_PACKAGE_HPP
 #include <vector>
+#include <cstring>
+#include "serializer.hpp"
 #include "header.hpp"
-#include <core/helper/helper.hpp>
+#include "serializable.hpp"
 
 namespace fup
 {
@@ -12,7 +14,7 @@ namespace fup
     {
         namespace entity
         {
-            class package : serializable
+            class package : public fup::core::entity::serializable
             {
             public:
                 package(){};

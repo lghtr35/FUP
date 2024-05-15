@@ -1,7 +1,5 @@
-#pragma once
 
 #include "response.hpp"
-#include <core/helper/helper.hpp>
 
 namespace fup
 {
@@ -26,15 +24,14 @@ namespace fup
                 unsigned int udp_port_be = htonl(udp_port);
                 std::memcpy(udp_port_bytes.data(), &udp_port_be, sizeof(unsigned int));
 
-                return helper::serializer::concatenate_vectors<char>({status_bytes,
-                                                                      connection_id_bytes,
-                                                                      udp_port_bytes});
+                return fup::core::entity::serializer::concatenate_vectors<char>({status_bytes,
+                                                                                 connection_id_bytes,
+                                                                                 udp_port_bytes});
             }
 
             size_t response::deserialize(const std::vector<char> &data)
             {
                 size_t offset = 0;
-                std::array<char, RESPONSE_BUFFER_SIZE> buffer;
 
                 // Deserialize status
                 std::memcpy(&status, data.data() + offset, sizeof(unsigned int));
@@ -50,6 +47,8 @@ namespace fup
                 std::memcpy(&udp_port, data.data() + offset, sizeof(unsigned int));
                 udp_port = ntohl(udp_port);
                 offset += sizeof(unsigned int);
+
+                return offset;
             }
         }
     }

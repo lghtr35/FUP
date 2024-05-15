@@ -1,7 +1,5 @@
-#pragma once
 
-#include <core/entity/request.hpp>
-#include <core/helper/helper.hpp>
+#include "request.hpp"
 
 namespace fup
 {
@@ -37,13 +35,13 @@ namespace fup
                 std::string message_prefix("SE");
                 std::vector<char> message_identifier(message_prefix.begin(), message_prefix.end());
 
-                return helper::serializer::concatenate_vectors<char>({message_identifier,
-                                                                      is_download_bytes,
-                                                                      udp_port_bytes,
-                                                                      connection_id_bytes,
-                                                                      package_size_bytes,
-                                                                      file_name_len_bytes,
-                                                                      std::vector<char>(file_name.begin(), file_name.end())});
+                return fup::core::entity::serializer::concatenate_vectors<char>({message_identifier,
+                                                                                 is_download_bytes,
+                                                                                 udp_port_bytes,
+                                                                                 connection_id_bytes,
+                                                                                 package_size_bytes,
+                                                                                 file_name_len_bytes,
+                                                                                 std::vector<char>(file_name.begin(), file_name.end())});
             }
 
             size_t request::deserialize(const std::vector<char> &data)
@@ -77,7 +75,7 @@ namespace fup
 
                 // Deserialize file_name
                 file_name.resize(fileNameLen);
-                std::memcpy(file_name.data(), data.data() + offset, fileNameLen);
+                std::memcpy(&file_name[0], data.data() + offset, fileNameLen);
                 offset += fileNameLen;
 
                 return offset;

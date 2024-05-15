@@ -1,4 +1,4 @@
-#pragma once
+
 #include "server.hpp"
 
 namespace fup
@@ -22,7 +22,7 @@ namespace fup
 
         void server::do_accept()
         {
-            fup::core::connection *connection = connection_factory->get_connection(&socket_factory->get_tcp(), &socket_factory->get_udp());
+            fup::core::connection *connection = connection_factory->get_connection(socket_factory->get_tcp(), socket_factory->get_udp());
             acceptor->async_accept(*connection->get_tcp_socket(), std::bind(&fup::facade::server::handle_accept, this, connection, boost::asio::placeholders::error));
             delete connection;
         }
@@ -135,7 +135,7 @@ namespace fup
             file_manager->close_file(file);
         }
 
-        server::server(int port, manager::file_manager *file_manager_injected = nullptr, fup::core::interface::checksum *checksum_injected = nullptr)
+        server::server(int port, manager::file_manager *file_manager_injected, fup::core::interface::checksum *checksum_injected)
         {
             // TODO in the future make this optional with different other checksum_services possible
             checksum_service = (checksum_injected == nullptr) ? new fup::core::service::blake3_checksum() : checksum_injected;

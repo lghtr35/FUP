@@ -1,8 +1,8 @@
-#pragma once
+
 
 #include <cstring>
 #include <stdexcept>
-#include <core/entity/header.hpp>
+#include "header.hpp"
 
 namespace fup
 {

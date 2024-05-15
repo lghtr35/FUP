@@ -1,12 +1,5 @@
-#pragma once
 
-#include <vector>
-#include <algorithm>
-#include <numeric>
-#include <boost/asio.hpp>
-#include "socket_factory.cpp"
-#include <core/core.hpp>
-#include <mutex>
+#include "connection_factory.hpp"
 
 namespace fup
 {
@@ -14,58 +7,49 @@ namespace fup
     {
         namespace helper
         {
-            class connection_factory
+            connection_factory::connection_factory() {}
+
+            connection_factory::~connection_factory()
             {
-            public:
-                connection_factory() {}
-
-                ~connection_factory()
+                for (int i = 0; i < connections.size(); i++)
                 {
-                    for (int i = 0; i < connections.size(); i++)
-                    {
-                        delete connections[i];
-                    }
+                    delete connections[i];
                 }
+            }
 
-                fup::core::connection *get_connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp)
+            fup::core::connection *connection_factory::get_connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp)
+            {
+                mutex.lock();
+                int free_id = 0;
+                for (; free_id < connections.size(); free_id++)
                 {
-                    mutex.lock();
-                    int free_id = 0;
-                    for (int free_id; free_id < connections.size(); free_id++)
-                    {
-                        if (connections[free_id] == nullptr)
-                            break;
-                    }
-                    fup::core::connection *connection = new fup::core::connection(tcp, udp, free_id);
-                    connections[free_id] = connection;
-                    connection_count++;
-                    mutex.unlock();
-                    return connection;
+                    if (connections[free_id] == nullptr)
+                        break;
                 }
+                fup::core::connection *connection = new fup::core::connection(tcp, udp, free_id);
+                connections[free_id] = connection;
+                connection_count++;
+                mutex.unlock();
+                return connection;
+            }
 
-                fup::core::connection *get_connection(int id)
-                {
-                    return connections[id];
-                }
+            fup::core::connection *connection_factory::get_connection(int id)
+            {
+                return connections[id];
+            }
 
-                unsigned int get_connection_count()
-                {
-                    return connection_count;
-                }
+            unsigned int connection_factory::get_connection_count()
+            {
+                return connection_count;
+            }
 
-                void delete_connection(int id)
-                {
-                    mutex.lock();
-                    delete connections[id];
-                    connection_count--;
-                    mutex.unlock();
-                }
-
-            private:
-                std::mutex mutex;
-                std::vector<fup::core::connection *> connections;
-                unsigned int connection_count;
-            };
+            void connection_factory::delete_connection(int id)
+            {
+                mutex.lock();
+                delete connections[id];
+                connection_count--;
+                mutex.unlock();
+            }
         }
     }
 }

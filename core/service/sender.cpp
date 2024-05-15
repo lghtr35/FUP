@@ -1,4 +1,4 @@
-#pragma once
+
 #include "sender.hpp"
 
 namespace fup
@@ -23,7 +23,7 @@ namespace fup
             template <typename T>
             int sender::send_tcp(const T &payload)
             {
-                std::vector<char> bytes = helper::serializer::serialize_payload(payload);
+                std::vector<char> bytes = entity::serializer::serialize_payload(payload);
                 size_t byteCount = bytes.size();
 
                 size_t bytesSent = 0;
@@ -52,7 +52,7 @@ namespace fup
             int sender::send_udp(const T &payload, boost::asio::ip::udp::endpoint &destination)
             {
                 // Convert payload to byte vector
-                std::vector<char> bytes = helper::serializer::serialize_payload(payload);
+                std::vector<char> bytes = entity::serializer::serialize_payload(payload);
                 size_t byteCount = bytes.size();
 
                 size_t bytesSent = 0;

@@ -2,7 +2,8 @@
 
 #ifndef FUP_CORE_ENTITY_RESPONSE_HPP
 #define FUP_CORE_ENTITY_RESPONSE_HPP
-#include <core/entity/serializable.hpp>
+#include "serializable.hpp"
+#include "serializer.hpp"
 #include <string>
 
 namespace fup
@@ -11,7 +12,7 @@ namespace fup
     {
         namespace entity
         {
-            class response : fup::core::entity::serializable
+            class response : public fup::core::entity::serializable
             {
             public:
                 response(){};

@@ -5,7 +5,8 @@
 #include <vector>
 #include <string>
 #include <cstring>
-#include <core/entity/serializable.hpp>
+#include "serializable.hpp"
+#include "serializer.hpp"
 
 namespace fup
 {
@@ -13,7 +14,7 @@ namespace fup
     {
         namespace entity
         {
-            class request : fup::core::entity::serializable
+            class request : public fup::core::entity::serializable
             {
             public:
                 request(){};
