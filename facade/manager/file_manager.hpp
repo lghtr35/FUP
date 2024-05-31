@@ -18,7 +18,7 @@ namespace fup
             {
             public:
                 std::fstream *open_file(std::string file_name, bool is_write = false);
-                fup::core::entity::metadata get_metadata(std::fstream *fs, unsigned int file_package_size, std::string file_name);
+                fup::core::entity::metadata get_metadata(std::fstream *fs, unsigned int file_packet_size, std::string file_name);
                 std::vector<char> get_file_bytes(std::fstream *fs, unsigned int offset, unsigned int size);
                 size_t get_file_size(std::fstream *fs, std::string file_name);
                 void close_file(std::fstream *fs);

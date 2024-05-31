@@ -4,6 +4,7 @@
 #include "core/core.hpp"
 #include <fstream>
 #include <thread>
+#include <csignal>
 #include "helper/helper.hpp"
 #include "manager/file_manager.hpp"
 #include "manager/upload_download_manager.hpp"
@@ -18,10 +19,11 @@ namespace fup
             void run(int thread_count);
             ~server();
             server(int port, manager::file_manager *file_manager_injected = nullptr, fup::core::interface::checksum *checksum_injected = nullptr);
+            void handle_accept(fup::core::connection *connection);
+            helper::connection_factory *connection_factory;
 
         private:
-            void do_accept();
-            void handle_accept(fup::core::connection *connection, const boost::system::error_code &error);
+            void do_accept(int handler, sockaddr_in client);
             void handle_handshake(fup::core::connection *connection);
             void handle_resend(fup::core::connection *connection);
             void upload_file(fup::core::connection *connection, std::fstream *file);
@@ -29,12 +31,8 @@ namespace fup
 
             core::interface::checksum *checksum_service;
             manager::file_manager *file_manager;
-            helper::connection_factory *connection_factory;
-            helper::socket_factory *socket_factory;
-            boost::asio::ip::tcp::acceptor *acceptor;
-            boost::asio::ip::udp::resolver *resolver;
-            boost::asio::ip::udp::socket *udp_socket;
-            boost::asio::io_context io_context;
+            std::vector<std::thread> threads;
+            int tcp_socket;
         };
     }
 }

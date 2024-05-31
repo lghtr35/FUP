@@ -17,7 +17,7 @@ namespace fup
                 }
             }
 
-            fup::core::connection *connection_factory::get_connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp)
+            fup::core::connection *connection_factory::get_connection(int tcp, int udp)
             {
                 mutex.lock();
                 int free_id = 0;

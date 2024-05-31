@@ -7,7 +7,7 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<char> response::serialize() const
+            std::vector<char> response::serialize()
             {
                 // 4 bytes
                 std::vector<char> status_bytes(sizeof(unsigned int));
@@ -24,12 +24,13 @@ namespace fup
                 unsigned int udp_port_be = htonl(udp_port);
                 std::memcpy(udp_port_bytes.data(), &udp_port_be, sizeof(unsigned int));
 
-                return fup::core::entity::serializer::concatenate_vectors<char>({status_bytes,
-                                                                                 connection_id_bytes,
-                                                                                 udp_port_bytes});
+                std::vector<std::vector<char>> bytes_list({status_bytes,
+                                                           connection_id_bytes,
+                                                           udp_port_bytes});
+                return fup::core::entity::serializer::concatenate_vectors<char>(bytes_list);
             }
 
-            size_t response::deserialize(const std::vector<char> &data)
+            size_t response::deserialize(std::vector<char> &data)
             {
                 size_t offset = 0;
 

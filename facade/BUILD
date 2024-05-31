@@ -6,5 +6,6 @@ cc_library(
         "//facade/helper:fup_facade_helper_lib",
         "//facade/manager:fup_facade_manager_lib",
         "//core:fup_core_lib"
-    ]
+    ],
+    visibility= ["//:__pkg__"]
 )

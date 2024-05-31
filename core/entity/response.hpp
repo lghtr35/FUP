@@ -19,8 +19,8 @@ namespace fup
                 unsigned int status;
                 unsigned int udp_port;
                 unsigned int connection_id;
-                std::vector<char> serialize() const override;
-                size_t deserialize(const std::vector<char> &data) override;
+                std::vector<char> serialize() override;
+                size_t deserialize(std::vector<char> &data) override;
             };
         }
     }

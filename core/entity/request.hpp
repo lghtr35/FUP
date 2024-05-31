@@ -20,11 +20,10 @@ namespace fup
                 request(){};
                 std::string file_name;
                 bool is_download;
-                unsigned int udp_port;
                 unsigned int connection_id;
-                unsigned int package_size;
-                std::vector<char> serialize() const override;
-                size_t deserialize(const std::vector<char> &data) override;
+                unsigned int packet_size;
+                std::vector<char> serialize() override;
+                size_t deserialize(std::vector<char> &data) override;
             };
         }
     }

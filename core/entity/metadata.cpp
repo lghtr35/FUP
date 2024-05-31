@@ -7,12 +7,12 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<char> metadata::serialize() const
+            std::vector<char> metadata::serialize()
             {
-                // Convert file_package_size to big-endian and copy
-                unsigned int packageSizeBE = htonl(file_package_size);
-                std::vector<char> packageSizeBytes(sizeof(unsigned int));
-                std::memcpy(packageSizeBytes.data(), &packageSizeBE, sizeof(unsigned int));
+                // Convert file_packet_size to big-endian and copy
+                unsigned int packetSizeBE = htonl(file_packet_size);
+                std::vector<char> packetSizeBytes(sizeof(unsigned int));
+                std::memcpy(packetSizeBytes.data(), &packetSizeBE, sizeof(unsigned int));
 
                 // Convert file_total_size to big-endian and copy
                 unsigned int totalSizeBE = htonl(file_total_size);
@@ -30,21 +30,17 @@ namespace fup
                 std::memcpy(fileExtensionLenBytes.data(), &fileExtensionLenBE, sizeof(uint32_t));
 
                 // Concatenate all byte vectors
-                return fup::core::entity::serializer::concatenate_vectors<char>({packageSizeBytes,
-                                                                                 totalSizeBytes,
-                                                                                 fileNameLenBytes,
-                                                                                 std::vector<char>(file_name.begin(), file_name.end()),
-                                                                                 fileExtensionLenBytes,
-                                                                                 std::vector<char>(file_extension.begin(), file_extension.end())});
+                std::vector<std::vector<char>> bytes_list({packetSizeBytes, totalSizeBytes, fileNameLenBytes, std::vector<char>(file_name.begin(), file_name.end()), fileExtensionLenBytes, std::vector<char>(file_extension.begin(), file_extension.end())});
+                return fup::core::entity::serializer::concatenate_vectors<char>(bytes_list);
             }
 
-            size_t metadata::deserialize(const std::vector<char> &data)
+            size_t metadata::deserialize(std::vector<char> &data)
             {
                 size_t offset = 0;
 
-                // Deserialize file_package_size
-                std::memcpy(&file_package_size, data.data() + offset, sizeof(unsigned int));
-                file_package_size = ntohl(file_package_size);
+                // Deserialize file_packet_size
+                std::memcpy(&file_packet_size, data.data() + offset, sizeof(unsigned int));
+                file_packet_size = ntohl(file_packet_size);
                 offset += sizeof(unsigned int);
 
                 // Deserialize file_total_size

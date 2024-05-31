@@ -13,38 +13,50 @@ namespace fup
         class connection
         {
         public:
-            connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, unsigned int idx);
+            // Constructors
+            connection(int tcp, int udp, unsigned int idx);
             ~connection();
+            // Getters
             service::sender *get_sender_service();
             service::receiver *get_receiver_service();
-            boost::asio::ip::tcp::socket *get_tcp_socket();
-            boost::asio::ip::udp::socket *get_udp_socket();
+            int get_tcp_socket();
+            int get_udp_socket();
             std::streampos get_file_begin();
             std::fstream *get_file();
             std::streampos get_file_end();
             std::string get_file_name();
             unsigned int get_id();
-            unsigned int get_package_size();
+            unsigned int get_packet_size();
             unsigned int get_remote_udp_port();
+            unsigned int get_remote_tcp_port();
             unsigned int get_remote_connection_id();
-            void set_package_size(unsigned int ps);
+            unsigned int get_udp_port();
+            std::string get_remote_address();
+            // Setters
+            void set_packet_size(unsigned int ps);
             void set_file(std::fstream *file_to_use, std::string file_name_to_use);
             void set_remote_udp_port(unsigned int port);
+            void set_remote_tcp_port(unsigned int port);
             void set_remote_connection_id(unsigned int id);
+            void set_remote_address(std::string address);
+            void set_udp_port(unsigned int port);
 
         private:
             service::receiver *receiver_service;
             service::sender *sender_service;
-            boost::asio::ip::tcp::socket *tcp_socket;
-            boost::asio::ip::udp::socket *udp_socket;
+            int tcp_socket;
+            int udp_socket;
             std::string file_name;
             std::streampos file_begin;
             std::fstream *file;
             std::streampos file_end;
             unsigned int id;
-            unsigned int package_size;
+            unsigned int packet_size;
             unsigned int remote_udp_port;
+            unsigned int remote_tcp_port;
             unsigned int remote_connection_id;
+            std::string remote_address;
+            unsigned int udp_port;
         };
     }
 }

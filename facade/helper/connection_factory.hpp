@@ -6,8 +6,6 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
-#include <boost/asio.hpp>
-#include "socket_factory.hpp"
 #include "core/connection.hpp"
 #include <mutex>
 
@@ -24,7 +22,7 @@ namespace fup
 
                 ~connection_factory();
 
-                fup::core::connection *get_connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp);
+                fup::core::connection *get_connection(int tcp, int udp);
 
                 fup::core::connection *get_connection(int id);
 

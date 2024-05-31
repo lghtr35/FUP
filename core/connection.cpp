@@ -5,12 +5,13 @@ namespace fup
 {
     namespace core
     {
-        connection::connection(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp, unsigned int idx)
+        connection::connection(int tcp, int udp, unsigned int idx)
         {
-            receiver_service = new fup::core::service::receiver(tcp, udp);
-            sender_service = new fup::core::service::sender(tcp, udp);
+
             tcp_socket = tcp;
             udp_socket = udp;
+            receiver_service = new fup::core::service::receiver(tcp_socket, udp_socket);
+            sender_service = new fup::core::service::sender(tcp_socket, udp_socket);
             id = idx;
         }
 
@@ -18,11 +19,16 @@ namespace fup
         {
             delete receiver_service;
             delete sender_service;
-            delete tcp_socket;
-            delete udp_socket;
+            close(tcp_socket);
+            close(udp_port);
         }
 
-        boost::asio::ip::tcp::socket *connection::get_tcp_socket()
+        int connection::get_udp_socket()
+        {
+            return udp_socket;
+        }
+
+        int connection::get_tcp_socket()
         {
             return tcp_socket;
         }
@@ -37,9 +43,9 @@ namespace fup
             return sender_service;
         }
 
-        unsigned int connection::get_package_size()
+        unsigned int connection::get_packet_size()
         {
-            return package_size;
+            return packet_size;
         }
 
         unsigned int connection::get_id()
@@ -52,9 +58,19 @@ namespace fup
             return remote_udp_port;
         }
 
+        unsigned int connection::get_remote_tcp_port()
+        {
+            return remote_tcp_port;
+        }
+
         unsigned int connection::get_remote_connection_id()
         {
             return remote_connection_id;
+        }
+
+        unsigned int connection::get_udp_port()
+        {
+            return udp_port;
         }
 
         std::streampos connection::get_file_begin()
@@ -77,9 +93,14 @@ namespace fup
             return file_name;
         }
 
-        void connection::set_package_size(unsigned int ps)
+        std::string connection::get_remote_address()
         {
-            package_size = ps;
+            return remote_address;
+        }
+
+        void connection::set_packet_size(unsigned int ps)
+        {
+            packet_size = ps;
         }
 
         void connection::set_file(std::fstream *file_to_use, std::string file_name_to_use)
@@ -97,9 +118,24 @@ namespace fup
             remote_udp_port = port;
         }
 
+        void connection::set_remote_tcp_port(unsigned int port)
+        {
+            remote_tcp_port = port;
+        }
+
         void connection::set_remote_connection_id(unsigned int id)
         {
             remote_connection_id = id;
+        }
+
+        void connection::set_remote_address(std::string address)
+        {
+            remote_address = address;
+        }
+
+        void connection::set_udp_port(unsigned int port)
+        {
+            udp_port = port;
         }
     }
 }

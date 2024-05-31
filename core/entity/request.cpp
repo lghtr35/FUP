@@ -7,24 +7,20 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<char> request::serialize() const
+            std::vector<char> request::serialize()
             {
                 // Convert is_download to big-endian and copy
                 std::vector<char> is_download_bytes(sizeof(bool));
                 std::memcpy(is_download_bytes.data(), &is_download, sizeof(bool));
-
-                std::vector<char> udp_port_bytes(sizeof(unsigned int));
-                unsigned int udp_port_be = htonl(udp_port);
-                std::memcpy(udp_port_bytes.data(), &udp_port_be, sizeof(unsigned int));
 
                 std::vector<char> connection_id_bytes(sizeof(unsigned int));
                 unsigned int connection_id_be = htonl(connection_id);
                 std::memcpy(connection_id_bytes.data(), &connection_id_be, sizeof(unsigned int));
 
                 // Convert is_download to big-endian and copy
-                std::vector<char> package_size_bytes(sizeof(unsigned int));
-                unsigned int package_size_be = htonl(package_size);
-                std::memcpy(package_size_bytes.data(), &package_size_be, sizeof(unsigned int));
+                std::vector<char> packet_size_bytes(sizeof(unsigned int));
+                unsigned int packet_size_be = htonl(packet_size);
+                std::memcpy(packet_size_bytes.data(), &packet_size_be, sizeof(unsigned int));
 
                 // Convert file_name length to big-endian and copy
                 uint32_t file_name_len_be = htonl(file_name.size());
@@ -35,16 +31,16 @@ namespace fup
                 std::string message_prefix("SE");
                 std::vector<char> message_identifier(message_prefix.begin(), message_prefix.end());
 
-                return fup::core::entity::serializer::concatenate_vectors<char>({message_identifier,
-                                                                                 is_download_bytes,
-                                                                                 udp_port_bytes,
-                                                                                 connection_id_bytes,
-                                                                                 package_size_bytes,
-                                                                                 file_name_len_bytes,
-                                                                                 std::vector<char>(file_name.begin(), file_name.end())});
+                std::vector<std::vector<char>> bytes_list({message_identifier,
+                                                           is_download_bytes,
+                                                           connection_id_bytes,
+                                                           packet_size_bytes,
+                                                           file_name_len_bytes,
+                                                           std::vector<char>(file_name.begin(), file_name.end())});
+                return fup::core::entity::serializer::concatenate_vectors<char>(bytes_list);
             }
 
-            size_t request::deserialize(const std::vector<char> &data)
+            size_t request::deserialize(std::vector<char> &data)
             {
                 size_t offset = 0;
 
@@ -52,19 +48,14 @@ namespace fup
                 std::memcpy(&is_download, data.data() + offset, sizeof(bool));
                 offset += sizeof(bool);
 
-                // Deserialize udp_port
-                std::memcpy(&udp_port, data.data() + offset, sizeof(unsigned int));
-                udp_port = ntohl(udp_port);
-                offset += sizeof(unsigned int);
-
                 // Deserialize connection_id
                 std::memcpy(&connection_id, data.data() + offset, sizeof(unsigned int));
                 connection_id = ntohl(connection_id);
                 offset += sizeof(unsigned int);
 
-                // Deserialize package_size
-                std::memcpy(&package_size, data.data() + offset, sizeof(unsigned int));
-                package_size = ntohl(package_size);
+                // Deserialize packet_size
+                std::memcpy(&packet_size, data.data() + offset, sizeof(unsigned int));
+                packet_size = ntohl(packet_size);
                 offset += sizeof(unsigned int);
 
                 // Deserialize file_name length

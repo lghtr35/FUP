@@ -5,10 +5,9 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>
 #include <BLAKE3/c/blake3.h>
 #include "core/entity/entity.hpp"
+#include "imports.hpp"
 
 namespace fup
 {
@@ -19,23 +18,23 @@ namespace fup
             class sender
             {
             public:
-                int send_key(const std::string key);
-                int send_metadata(const entity::metadata &metadata);
-                int send_package(const entity::package &package, boost::asio::ip::udp::endpoint &destination);
-                int send_request(const entity::request &request);
-                int send_response(const entity::response &response);
-                int send_resend(const int &connection_id, const int &package_number);
-                sender(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp);
+                int send_key(std::string key);
+                int send_metadata(entity::metadata &metadata);
+                int send_packet(entity::packet &packet);
+                int send_request(entity::request &request);
+                int send_response(entity::response &response);
+                int send_resend(unsigned int connection_id, unsigned int packet_number);
+                sender(int tcp, int udp);
                 ~sender();
 
             private:
                 template <typename T>
-                int send_tcp(const T &payload);
+                int send_tcp(T &payload);
                 template <typename T>
-                int send_udp(const T &payload, boost::asio::ip::udp::endpoint &destination);
+                int send_udp(T &payload);
 
-                boost::asio::ip::tcp::socket *tcp_socket;
-                boost::asio::ip::udp::socket *udp_socket;
+                int tcp_socket;
+                int udp_socket;
             };
         }
     }

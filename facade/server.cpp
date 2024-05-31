@@ -7,120 +7,151 @@ namespace fup
     {
         void server::run(int thread_count)
         {
-            // Create a pool of threads to run the io_context.
-            std::vector<std::thread> threads;
             threads.reserve(thread_count - 1);
-            for (std::size_t i = 0; i < thread_count; ++i)
-                threads.emplace_back([this]
-                                     { io_context.run(); });
-            io_context.run();
 
-            // Wait for all threads in the pool to exit.
-            for (std::size_t i = 0; i < threads.size(); ++i)
-                threads[i].join();
+            if (listen(tcp_socket, SOMAXCONN) != 0)
+            {
+                throw std::runtime_error("Server not able to listen");
+            }
+
+            sockaddr_in client;
+            while (true)
+            {
+                socklen_t clilen = sizeof(client);
+                int handler = accept(tcp_socket, (sockaddr *)&client, &clilen);
+
+                // Block program loop until we find a thread that we can run the new connection on
+                bool found;
+                while (found == false)
+                {
+                    // Try to fetch a thread and run the new connection on
+                    for (std::size_t i = 0; i < thread_count; ++i)
+                    {
+                        if (!threads[i].joinable())
+                        {
+                            threads[i] = std::thread(&fup::facade::server::do_accept, this, handler, client);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    // Join all threads in the pool to make room for new connections.
+                    for (std::size_t i = 0; i < threads.size(); ++i)
+                    {
+                        if (threads[i].joinable())
+                        {
+                            threads[i].join();
+                        }
+                    }
+                }
+            }
         }
 
-        void server::do_accept()
+        void server::do_accept(int handler, sockaddr_in client)
         {
-            fup::core::connection *connection = connection_factory->get_connection(socket_factory->get_tcp(), socket_factory->get_udp());
-            acceptor->async_accept(*connection->get_tcp_socket(), std::bind(&fup::facade::server::handle_accept, this, connection, boost::asio::placeholders::error));
+            int udp = socket(AF_INET, SOCK_DGRAM, 0);
+            sockaddr_in server;
+            server.sin_addr.s_addr = inet_addr("127.0.0.1");
+            server.sin_family = AF_INET;
+            server.sin_port = ntohs(0);
+            if (bind(udp, (sockaddr *)&server, sizeof(server)) != 0)
+            {
+                throw std::runtime_error("Cant set udp port for binding");
+            }
+
+            fup::core::connection *connection = connection_factory->get_connection(handler, udp);
+            connection->set_remote_address(inet_ntoa(client.sin_addr));
+            connection->set_remote_tcp_port(client.sin_port);
+            connection->set_udp_port(server.sin_port);
+
+            handle_accept(connection);
+            close(udp);
             delete connection;
         }
 
-        void server::handle_accept(fup::core::connection *connection, const boost::system::error_code &error)
+        void server::handle_accept(fup::core::connection *connection)
         {
-            if (!error)
-            {
-                std::cout << "Accepted connection on: "
-                          << connection->get_tcp_socket()->remote_endpoint().address().to_string()
-                          << ":" << connection->get_tcp_socket()->remote_endpoint().port() << '\n';
+            std::cout << "Accepted connection on: "
+                      << connection->get_remote_address()
+                      << ":" << connection->get_remote_tcp_port() << '\n';
 
-                try
+            try
+            {
+                std::string message_identifier = connection->get_receiver_service()->receive_message_identifier();
+                if (message_identifier == "RE")
                 {
-                    std::string message_identifier = connection->get_receiver_service()->receive_message_identifier();
-                    if (message_identifier == "RE")
-                    {
-                        handle_resend(connection);
-                        delete connection;
-                    }
-                    else if (message_identifier == "SE")
-                    {
-                        handle_handshake(connection);
-                    }
+                    handle_resend(connection);
+                    delete connection;
                 }
-                catch (std::exception exception)
+                else if (message_identifier == "SE")
                 {
-                    // TODO think what to do in this scenario
-                    connection_factory->delete_connection(connection->get_id());
-                    std::cout << "An error occured: " << exception.what() << "\n";
+                    handle_handshake(connection);
                 }
             }
-            else
+            catch (std::exception exception)
             {
                 // TODO think what to do in this scenario
                 connection_factory->delete_connection(connection->get_id());
-                std::cout << "An error occured: " << error.what() << "\n";
+                std::cout << "An error occured: " << exception.what() << "\n";
             }
-
-            // Continue accepting
-            do_accept();
         }
 
         void server::handle_resend(fup::core::connection *connection)
         {
             std::pair<int, int> pair = connection->get_receiver_service()->receive_resend();
             int connection_id = pair.first;
-            int package_seq_num = pair.second;
+            int packet_seq_num = pair.second;
             delete connection;
-
-            boost::asio::ip::udp::endpoint receiver_endpoint = boost::asio::ip::udp::endpoint(boost::asio::ip::address::from_string(connection->get_tcp_socket()->remote_endpoint().address().to_string()), connection->get_remote_udp_port());
 
             connection = connection_factory->get_connection(connection_id);
             std::fstream *file = connection->get_file();
-            int package_size = connection->get_package_size();
-            int offset = package_seq_num * package_size;
-            std::vector<char> bytes = file_manager->get_file_bytes(file, offset, package_size);
+            int packet_size = connection->get_packet_size();
+            int offset = packet_seq_num * packet_size;
+            std::vector<char> bytes = file_manager->get_file_bytes(file, offset, packet_size);
             fup::core::entity::header h;
-            h.package_seq_num = package_seq_num;
+            h.packet_seq_num = packet_seq_num;
             h.checksum = checksum_service->create_checksum(bytes);
             h.body_length = bytes.size();
-            fup::core::entity::package p(h, bytes);
-            connection->get_sender_service()->send_package(p, receiver_endpoint);
+            fup::core::entity::packet p(h, bytes);
+            connection->get_sender_service()->send_packet(p);
             file_manager->close_file(file);
         }
 
         void server::handle_handshake(fup::core::connection *connection)
         {
-            fup::core::entity::request *request = connection->get_receiver_service()->receive_request();
-            connection->set_package_size(request->package_size);
-            connection->set_remote_udp_port(request->udp_port);
-            connection->set_remote_connection_id(request->connection_id);
+            fup::core::entity::request request = connection->get_receiver_service()->receive_request();
+            connection->set_packet_size(request.packet_size);
+            connection->set_remote_connection_id(request.connection_id);
 
             fup::core::entity::response response;
             response.status = 0;
             response.connection_id = connection->get_id();
-            response.udp_port = connection->get_udp_socket()->local_endpoint().port();
+            response.udp_port = connection->get_udp_port();
             connection->get_sender_service()->send_response(response);
 
-            if (request->is_download)
+            if (listen(connection->get_udp_socket(), 4) != 0)
             {
-                std::fstream *file = file_manager->open_file(request->file_name);
-                connection->set_file(file, request->file_name);
+                throw std::runtime_error(std::string("Cant listen with udp socket on connection_id: ") + std::to_string(connection->get_id()));
+            }
+
+            if (request.is_download)
+            {
+                std::fstream *file = file_manager->open_file(request.file_name);
+                connection->set_file(file, request.file_name);
                 // We call server upload file because client wants to download a file so server should upload to the client
                 upload_file(connection, file);
             }
             else
             {
-                std::fstream *file = file_manager->open_file(request->file_name, true);
-                connection->set_file(file, request->file_name);
+                std::fstream *file = file_manager->open_file(request.file_name, true);
+                connection->set_file(file, request.file_name);
                 download_file(connection, file);
             }
-            delete request;
         }
 
         void server::upload_file(fup::core::connection *connection, std::fstream *file)
         {
-            fup::core::entity::metadata send_op_metadata = file_manager->get_metadata(file, connection->get_package_size(), connection->get_file_name());
+            fup::core::entity::metadata send_op_metadata = file_manager->get_metadata(file, connection->get_packet_size(), connection->get_file_name());
             connection->get_sender_service()->send_metadata(send_op_metadata);
             fup::facade::manager::upload_download_manager::upload_file(connection, checksum_service, file_manager, file);
 
@@ -142,10 +173,16 @@ namespace fup
             file_manager = (file_manager_injected == nullptr) ? new fup::facade::manager::file_manager("/") : file_manager_injected;
 
             connection_factory = new fup::facade::helper::connection_factory();
-            socket_factory = new fup::facade::helper::socket_factory(io_context);
-            acceptor = new boost::asio::ip::tcp::acceptor(io_context, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port));
-            resolver = new boost::asio::ip::udp::resolver(io_context);
-            udp_socket = new boost::asio::ip::udp::socket(io_context);
+
+            tcp_socket = socket(AF_INET, SOCK_STREAM, 0);
+            sockaddr_in server;
+            server.sin_family = AF_INET;
+            server.sin_port = port;
+            server.sin_addr.s_addr = inet_addr("127.0.0.1");
+            if (bind(tcp_socket, (sockaddr *)&server, sizeof(server)) != 0)
+            {
+                throw std::runtime_error("Cant configure TCP socket on this port");
+            }
         }
 
         server::~server()
@@ -153,10 +190,7 @@ namespace fup
             delete checksum_service;
             delete file_manager;
             delete connection_factory;
-            delete socket_factory;
-            delete acceptor;
-            delete resolver;
-            delete udp_socket;
+            close(tcp_socket);
         }
     }
 }

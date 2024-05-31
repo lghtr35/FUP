@@ -1,5 +1,5 @@
 
-#include "package.hpp"
+#include "packet.hpp"
 
 namespace fup
 {
@@ -7,13 +7,14 @@ namespace fup
     {
         namespace entity
         {
-            std::vector<char> package::serialize() const
+            std::vector<char> packet::serialize()
             {
                 std::vector<char> header_bytes = header.serialize();
-                return fup::core::entity::serializer::concatenate_vectors<char>({header_bytes, body});
+                std::vector<std::vector<char>> bytes_list({header_bytes, body});
+                return fup::core::entity::serializer::concatenate_vectors<char>(bytes_list);
             }
 
-            size_t package::deserialize(const std::vector<char> &data)
+            size_t packet::deserialize(std::vector<char> &data)
             {
                 size_t offset = header.deserialize(data);
                 // Resize the body vector to hold the remaining data

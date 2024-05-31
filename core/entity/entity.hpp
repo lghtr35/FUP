@@ -2,7 +2,7 @@
 
 #ifndef FUP_CORE_ENTITY_HPP
 #define FUP_CORE_ENTITY_HPP
-#include "package.hpp"
+#include "packet.hpp"
 #include "metadata.hpp"
 #include "header.hpp"
 #include "request.hpp"

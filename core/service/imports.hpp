@@ -1,8 +1,7 @@
 #pragma once
 
-#ifndef FUP_FACADE_HELPER_HPP
-#define FUP_FACADE_HELPER_HPP
-#include "connection_factory.hpp"
+#ifndef FUP_CORE_SERVICE_IMPORTS_HPP
+#define FUP_CORE_SERVICE_IMPORTS_HPP
 #include <stdio.h>
 #include <string.h>
 #ifdef _WIN32

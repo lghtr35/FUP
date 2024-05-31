@@ -4,8 +4,8 @@
 #include "core/entity/entity.hpp"
 #include <iostream>
 #include <BLAKE3/c/blake3.h>
-#include <boost/asio.hpp>
 #include "interface/constants.hpp"
+#include "imports.hpp"
 
 namespace fup
 {
@@ -17,19 +17,19 @@ namespace fup
             {
             public:
                 std::string receive_message_identifier();
-                fup::core::entity::request *receive_request();
-                fup::core::entity::package *receive_package();
-                fup::core::entity::response *receive_response();
-                std::pair<int, int> receive_resend();
-                fup::core::entity::metadata *receive_metadata();
+                fup::core::entity::request receive_request();
+                fup::core::entity::packet receive_packet();
+                fup::core::entity::response receive_response();
+                std::pair<unsigned int, unsigned int> receive_resend();
+                fup::core::entity::metadata receive_metadata();
                 std::string receive_key();
-                receiver(boost::asio::ip::tcp::socket *tcp, boost::asio::ip::udp::socket *udp);
+                receiver(int &tcp, int &udp);
                 ~receiver();
 
             private:
-                fup::core::entity::metadata *metadata;
-                boost::asio::ip::tcp::socket *tcp_socket;
-                boost::asio::ip::udp::socket *udp_socket;
+                fup::core::entity::metadata metadata;
+                int tcp_socket;
+                int udp_socket;
             };
         }
     }
