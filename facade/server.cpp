@@ -25,7 +25,7 @@ namespace fup
                 while (found == false)
                 {
                     // Try to fetch a thread and run the new connection on
-                    for (std::size_t i = 0; i < thread_count; ++i)
+                    for (std::size_t i = 0; i < thread_count - 1; ++i)
                     {
                         if (!threads[i].joinable())
                         {
