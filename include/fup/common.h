@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <string.h>
 
 typedef unsigned int FUP_Version;
 typedef unsigned int FUP_Size;

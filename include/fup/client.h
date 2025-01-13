@@ -25,8 +25,6 @@ int FUP_Client_ListFiles(FUP_Client *self, char *destination_url, int destinatio
 
 // Kind of private/underlying functions
 int _FUP_Client_Connect(FUP_Client *self, int ip_family, char *destination_url, unsigned short destination_port, FUP_Keyword message_type);
-int _FUP_Client_Send(FUP_Client *self, unsigned int destination_ip, unsigned short destination_port, const FUP_Message request);
-int _FUP_Client_Receive(FUP_Client *self, FUP_Message *response);
 int _FUP_Client_Disconnect(FUP_Client *self, int socket_fd);
 
 #endif
