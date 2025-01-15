@@ -16,11 +16,11 @@ typedef uuid_t FUP_Connection_Id;
 typedef enum FUP_Keyword
 {
     // Discrete basic request/response pair
-    LIST_FILES, // TCP. Client to server. Response to this is FILES
-    FILES,      // TCP. Server to client. Indicates success in the interaction. If not success return ABORT
+    LIST_FILES, // TCP. Client to server. Response to this is FILES OR ABORT
+    FILES,      // TCP. Server to client. Indicates success in the interaction. No response
 
-    DOWNLOAD,      // TCP. Client to server. Request to get a specific file. Response to this is either INFO or ABORT
-    UPLOAD,        // TCP. Client to server. Informs to upload a file. Response to this is either INFO or ABORT
+    DOWNLOAD,      // TCP. Client to server. Request to get a specific file. Response to this is either ACK or ABORT
+    UPLOAD,        // TCP. Client to server. Informs to upload a file. Response to this is either ACK or ABORT
     RESEND_PACKET, // TCP. Both directions. Request to get a specific packet that has not been read with success. Response to this is either PACKET or ABORT
 
     ACK,   // TCP. Both directions. Indicates that the request has been acknowledged by the other party. No response

@@ -4,7 +4,12 @@ int _FUP_Message_Send(int socket_fd, const FUP_Message request)
 {
     int bytes_sent, message_len;
     char *buffer;
-    message_len = FUP_Message_Serialize(&request, buffer);
+    message_len = FUP_Message_Deserialize(&buffer, &request);
+    if (message_len < 0)
+    {
+        fprintf(stderr, "Error in serializing message. error: %s\n", strerror(message_len));
+        return (-1);
+    }
 
     bytes_sent = send(socket_fd, buffer, message_len, 0);
     if (bytes_sent == -1)
@@ -53,12 +58,12 @@ int _FUP_Message_Receive(int socket_fd, FUP_Message *response)
         return (-4);
     }
 
-    char data[response->header.size + fixed_message_size]; // VLA
+    char data[response->header.body_size + fixed_message_size]; // VLA
     memcpy(data, fixed_message_buffer, fixed_message_size);
     char buffer[BUFSIZ];
     bytes_read = 0;
     int offset = fixed_message_size;
-    while (bytes_read >= 0 && bytes_read < response->header.size)
+    while (bytes_read >= 0 && bytes_read < response->header.body_size)
     {
         bytes_read = recv(socket_fd, buffer, BUFSIZ, 0);
         if (bytes_read == 0)

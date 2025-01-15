@@ -14,13 +14,13 @@ void FUP_Client_Delete(FUP_Client *self)
 }
 
 // Kind of private/underlying functions
-int _FUP_Client_Connect(FUP_Client *self, int ip_family, char *destination_url, unsigned short destination_port, FUP_Keyword message_type)
+int _FUP_Client_Connect(FUP_Client *self, char *destination_url, unsigned short destination_port, FUP_Keyword message_type)
 {
     int status;
     int socket_fd;
     struct addrinfo hints;
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = ip_family;
+    hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_flags = AI_PASSIVE;
     if (message_type == PACKET || message_type == CONNECT_UDP)
@@ -67,6 +67,89 @@ int _FUP_Client_Disconnect(FUP_Client *self, int socket_fd)
 }
 
 // Operations possible from client
-int FUP_Client_Upload(FUP_Client *self, char *destination_url, int destination_port, char *file_fullpath, int *res);
-int FUP_Client_Download(FUP_Client *self, char *destination_url, int destination_port, char *filename, int *res);
+int FUP_Client_Upload(FUP_Client *self, char *destination_url, int destination_port, char *file_fullpath, int *res)
+{
+
+    return 0;
+}
+int FUP_Client_Download(FUP_Client *self, char *destination_url, int destination_port, char *filename, int *res)
+{
+    FUP_Message request = {.header = {.version = self->version, .keyword = DOWNLOAD, .body_size = 0}};
+    FUP_M_Download download_body = {.filename_size = strlen(filename), .filename = filename};
+    request.body = &download_body;
+    request.header.body_size = FUP_M_Download_Size(&download_body);
+
+    int tcp_socket_fd = _FUP_Client_Connect(self, destination_url, destination_port, request.header.keyword);
+    if (tcp_socket_fd < 0)
+    {
+        fprintf(stderr, "can not connect to server. error:%s\n", strerror(tcp_socket_fd));
+        return -1;
+    }
+
+    int status = FUP_Message_Send(tcp_socket_fd, request);
+    if (status < 0)
+    {
+        fprintf(stderr, "can not connect to server. error:%s\n", strerror(status));
+        return -2;
+    }
+
+    FUP_Message response;
+    status = FUP_Message_Receive(tcp_socket_fd, &response);
+    if (status < 0)
+    {
+        fprintf(stderr, "server did not respond. error:%s\n", strerror(status));
+        return -3;
+    }
+
+    if (response.header.keyword == ABORT)
+    {
+        fprintf(stderr, "server aborted the download. error:%s\n", strerror(status));
+        return -4;
+    }
+
+    if (response.header.keyword != ACK || response.header.connection_id)
+    {
+        fprintf(stderr, "unexpected response from server. Aborting.\n");
+        return -5;
+    }
+
+    request.header.keyword = CONNECT_UDP;
+    request.header.body_size = 0;
+    request.body = NULL;
+    int udp_socket_fd = _FUP_Client_Connect(self, destination_url, destination_port, request.header.keyword);
+
+    if (udp_socket_fd < 0)
+    {
+        fprintf(stderr, "can not connect to server. error:%s\n", strerror(udp_socket_fd));
+        return -1;
+    }
+
+    int status = FUP_Message_Send(udp_socket_fd, request);
+    if (status < 0)
+    {
+        fprintf(stderr, "can not connect to server. error:%s\n", strerror(status));
+        return -2;
+    }
+
+    status = FUP_Message_Receive(udp_socket_fd, &response);
+    if (status < 0)
+    {
+        fprintf(stderr, "server did not respond. error:%s\n", strerror(status));
+        return -3;
+    }
+
+    if (response.header.keyword == ABORT)
+    {
+        fprintf(stderr, "server aborted the download. error:%s\n", strerror(status));
+        return -4;
+    }
+
+    if (response.header.keyword != ACK || response.header.connection_id)
+    {
+        fprintf(stderr, "unexpected response from server. Aborting.\n");
+        return -5;
+    }
+
+        return 0;
+}
 int FUP_Client_ListFiles(FUP_Client *self, char *destination_url, int destination_port, char **res);
