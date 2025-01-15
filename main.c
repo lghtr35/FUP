@@ -1,12 +1,12 @@
-#include "include/fup.h"
+#include "include/fup.hpp"
 #include <stdio.h>
 
 int main(int argc, char **argv)
 {
-    FUP_Client *client;
-    *client = FUP_Client_Init("v1", "/FUP/Test/");
+    Client *client;
+    *client = Init("v1", "/FUP/Test/");
 
-    char *file_path = FUP_Client_Download(client);
+    char *file_path = Download(client);
 
     printf("%s", file_path);
 
