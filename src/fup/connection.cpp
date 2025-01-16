@@ -9,28 +9,24 @@ namespace fup
     int connection::send_message(int socket_fd, message *request)
     {
         int bytes_sent, message_len;
-        uint8_t *buffer = request->serialize();
+        std::vector<uint8_t> buffer = request->serialize();
         message_len = request->size();
         if (message_len < 0)
         {
-            fprintf(stderr, "Error in serializing message. error: %s\n", strerror(message_len));
-            return (-1);
+            throw std::runtime_error("Error in serializing message.");
         }
 
-        bytes_sent = send(socket_fd, buffer, message_len, 0);
+        bytes_sent = send(socket_fd, buffer.data(), message_len, 0);
         if (bytes_sent == -1)
         {
-            fprintf(stderr, "send error: %s\n", strerror(errno));
-            return (-1);
-        }
-        else if (bytes_sent == message_len)
-        {
-            printf("sent full message: \"%s\"\n", buffer);
+            std::cerr << "send error: " << std::strerror(errno) << '\n';
+            return -1;
         }
         else
         {
-            printf("sent partial message: %d bytes sent.\n", bytes_sent);
-            return (-2);
+            errno = EPROTO;
+            std::cerr << "sent partial message: " << bytes_sent << " bytes sent.\n";
+            return -1;
         }
 
         return 0;
@@ -44,8 +40,8 @@ namespace fup
         }
         int fixed_message_size = response->header.size();
         int bytes_read = 0, bytes_parsed = 0;
-        uint8_t fixed_message_buffer[fixed_message_size]; // VLA
-        bytes_read = recv(socket_fd, fixed_message_buffer, fixed_message_size, 0);
+        std::vector<uint8_t> fixed_message_buffer(fixed_message_size); // VLA
+        bytes_read = recv(socket_fd, fixed_message_buffer.data(), fixed_message_size, 0);
         if (bytes_read == 0)
         {
             errno = ECONNRESET;
@@ -72,8 +68,8 @@ namespace fup
             return -1;
         }
 
-        std::vector<uint8_t> data[response->size()]; // VLA
-        memcpy(data, fixed_message_buffer, fixed_message_size);
+        std::vector<uint8_t> data(response->size()); // VLA
+        memcpy(data.data(), fixed_message_buffer.data(), fixed_message_size);
         uint8_t buffer[BUFSIZ];
         int read_size = BUFSIZ, remaining_size = response->header.body_size, offset = fixed_message_size;
         bytes_read = 0;
@@ -96,7 +92,7 @@ namespace fup
                 fprintf(stderr, "recv error: %s\n", strerror(errno));
                 return -1;
             }
-            memcpy(data + offset, buffer, bytes_read);
+            memcpy(data.data() + offset, buffer, bytes_read);
             offset += bytes_read;
             remaining_size -= bytes_read;
         }

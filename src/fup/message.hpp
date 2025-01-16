@@ -17,8 +17,8 @@ namespace fup
         void *body;
 
         size_t size();
-        uint8_t *serialize();
-        int deserialize(uint8_t *data);
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
     };
 
     /*
@@ -34,7 +34,7 @@ namespace fup
         size_t body_size;            // 1 unsigned int
         int size() { return sizeof(version) + sizeof(connection_id) + sizeof(keyword) + sizeof(size_t); }
         uint8_t serialize();
-        int deserialize(uint8_t *data);
+        int deserialize(std::vector<uint8_t> data);
     };
 
     /*
@@ -53,8 +53,8 @@ namespace fup
         size_t *filename_sizes;
         uint8_t *filenames;
         int size();
-        uint8_t *serialize();
-        int deserialize(uint8_t *data);
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
     };
 
     /*
@@ -70,8 +70,8 @@ namespace fup
         // Variable
         char *filename;
         int size();
-        uint8_t *serialize();
-        int deserialize(uint8_t *data);
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
     };
 
     /*
@@ -87,8 +87,8 @@ namespace fup
         // Variable
         char *filename;
         int size();
-        uint8_t *serialize();
-        int deserialize(uint8_t *data);
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
     };
 
     /*
@@ -99,8 +99,8 @@ namespace fup
         // Fixed
         int sequence_id;
         int size();
-        uint8_t *serialize();
-        int deserialize(uint8_t *data);
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
     };
 
     /*
@@ -129,8 +129,8 @@ namespace fup
         uint8_t *data;
         char *checksum;
         int size();
-        uint8_t *serialize();
-        int deserialize(uint8_t *data);
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
     };
 
 }

@@ -2,10 +2,13 @@
 #define FUP_COMMON_HPP
 
 #include <uuid/uuid.h>
-#include <errno.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <vector>
+#include <stdexcept>
+#include <cerrno>
+#include <cstring>
 #include <iostream>
 
 namespace fup
