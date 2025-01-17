@@ -14,9 +14,9 @@ namespace fup
     {
         header header;
         // Variable
-        void *body;
+        std::vector<uint8_t> body;
 
-        size_t size();
+        size_t size() {return header.size() + header.body_size;};
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
@@ -32,7 +32,7 @@ namespace fup
         connection_id connection_id; // 16 unsigned char
         keyword keyword;             // 1 Keyword
         size_t body_size;            // 1 unsigned int
-        int size() { return sizeof(version) + sizeof(connection_id) + sizeof(keyword) + sizeof(size_t); }
+        size_t size() { return sizeof(version) + sizeof(connection_id) + sizeof(keyword) + sizeof(size_t); }
         uint8_t serialize();
         int deserialize(std::vector<uint8_t> data);
     };
@@ -45,14 +45,14 @@ namespace fup
     /*
      * Files is to response to ListFiles. All the file_names should be present
      */
-    struct files
+    struct files_body
     {
         // Fixed
         unsigned int element_count;
         // Variable
         size_t *filename_sizes;
         uint8_t *filenames;
-        int size();
+        size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
@@ -63,13 +63,13 @@ namespace fup
      * It has file extension
      * It has listen port for udp
      */
-    struct download
+    struct download_body
     {
         // Fixed
         size_t filename_size;
         // Variable
         char *filename;
-        int size();
+        size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
@@ -79,14 +79,14 @@ namespace fup
      * It has filename
      * It has file extension
      */
-    struct upload
+    struct upload_body
     {
         // Fixed
         size_t file_size;
         size_t filename_size;
         // Variable
         char *filename;
-        int size();
+        size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
@@ -94,11 +94,11 @@ namespace fup
     /*
      * ResendPacket is to request to fetch a packet with specific id
      */
-    struct resend
+    struct resend_body
     {
         // Fixed
         int sequence_id;
-        int size();
+        size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
@@ -119,7 +119,7 @@ namespace fup
      *
      */
 
-    struct packet
+    struct packet_body
     {
         // Fixed
         int sequence_id; // to determine the ordering of data
@@ -128,7 +128,7 @@ namespace fup
         // Variable
         uint8_t *data;
         char *checksum;
-        int size();
+        size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };

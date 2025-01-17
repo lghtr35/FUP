@@ -3,6 +3,7 @@
 
 #include "common.hpp"
 #include "connection.hpp"
+#include <thread>
 
 namespace fup
 {
@@ -14,19 +15,20 @@ namespace fup
     class client
     {
     public:
-        client(int version, char *save_location);
+        client(int version, std::string save_location);
         ~client();
 
-        int upload(char *destination_url, int destination_port, char *file_fullpath);
-        int download(char *destination_url, int destination_port, char *filename);
-        int list_files(char *destination_url, int destination_port, char **res);
+        int upload(std::string destination_url, std::string destination_port, std::string file_fullpath);
+        int download(std::string destination_url, std::string destination_port, std::string filename);
+        int list_files(std::string destination_url, std::string destination_port, std::string *res);
 
-    private:
+    private: 
         version version;
-        char *save_location;
-        connection *connection;
-        int connect(int ip_family, char *destination_url, unsigned short destination_port, int sock_type);
-        int disconnect();
+        std::string save_location;
+        std::unique_ptr<connection> conn;
+        int _init_socket(std::string destination_url, std::string destination_port, int sock_type);
+        void _connect(std::string destination_url, std::string destination_port);
+        void _disconnect();
     };
 }
 

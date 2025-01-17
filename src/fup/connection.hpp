@@ -6,15 +6,15 @@ namespace fup
 {
     struct connection
     {
-    public:
-        connection(int id);
-        int send_message(int socket_fd, message *request);
-        int receive_message(int socket_fd, message *response);
+    public:        
+        connection_id id;
+        void send_message(std::shared_ptr<message> request, bool is_tcp);
+        message receive_message(bool is_tcp);
+        void receive_message_threaded(bool is_tcp, std::shared_ptr<message> message);
         void set_tcp(int socket_fd);
         void set_udp(int socket_fd);
-
+        ~connection();
     private:
-        connection_id id;
         int tcp_socket_fd;
         int udp_socket_fd;
     };
