@@ -25,7 +25,6 @@ namespace fup
 
         DOWNLOAD,      // TCP. Client to server. Request to get a specific file. Response to this is either ACK or ABORT
         UPLOAD,        // TCP. Client to server. Informs to upload a file. Response to this is either ACK or ABORT
-        START_TRANSFER, // TCP. Both directions. Receiving party informs that it is ready to consume packets. Response to this is either PACKET or ABORT
         RESEND_PACKET, // TCP. Both directions. Request to get a specific packet that has not been read with success. Response to this is either PACKET or ABORT
 
         ACK,   // TCP. Both directions. Indicates that the request has been acknowledged by the other party. No response

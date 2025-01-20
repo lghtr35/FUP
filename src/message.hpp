@@ -5,21 +5,6 @@
 
 namespace fup
 {
-    /*
-     * Message is the structure of all messages
-     * Message can have different versions with different fields.
-     * Any can be assignable and can be parsed in its own way
-     */
-    struct message
-    {
-        header header;
-        // Variable
-        std::vector<uint8_t> body;
-
-        size_t size() {return header.size() + header.body_size;};
-        std::vector<uint8_t> serialize();
-        int deserialize(std::vector<uint8_t> data);
-    };
 
     /*
      * Header is the fixed size_t part of each message
@@ -34,6 +19,22 @@ namespace fup
         size_t body_size;            // 1 unsigned int
         size_t size() { return sizeof(version) + sizeof(connection_id) + sizeof(keyword) + sizeof(size_t); }
         uint8_t serialize();
+        int deserialize(std::vector<uint8_t> data);
+    };
+
+    /*
+     * Message is the structure of all messages
+     * Message can have different versions with different fields.
+     * Any can be assignable and can be parsed in its own way
+     */
+    struct message
+    {
+        header header;
+        // Variable
+        std::vector<uint8_t> body;
+
+        size_t size() {return header.size() + header.body_size;};
+        std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
 

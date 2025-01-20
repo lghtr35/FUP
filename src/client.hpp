@@ -15,7 +15,7 @@ namespace fup
     class client
     {
     public:
-        client(int version, std::string save_location);
+        client(unsigned int version, std::string save_location);
         ~client();
 
         int upload(std::string destination_url, std::string destination_port, std::string file_fullpath);

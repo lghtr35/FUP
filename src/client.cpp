@@ -2,7 +2,7 @@
 
 namespace fup {
 
-    client::client(int version, std::string save_location) : version{ version }, save_location{ save_location } {}
+    client::client(unsigned int version, std::string save_location) : version{ (fup::version)version }, save_location{ save_location } {}
 
     client::~client() {}
 
@@ -47,7 +47,7 @@ namespace fup {
             fprintf(stderr, "connect error: %s\n", strerror(status));
             return (-1);
         }
-        printf("connected socket to %s:%d\n", destination_url, destination_port);
+        printf("connected socket to %s:%s\n", destination_url.c_str(), destination_port.c_str());
 
         freeaddrinfo(res);
 
@@ -69,19 +69,26 @@ namespace fup {
             udp_message->header = { .body_size = 0, .version = this->version, .keyword = CONNECT_UDP };
 
             conn->send_message(tcp_message, true);
-
             *tcp_message = conn->receive_message(true);
 
-            t1.join();
-            t2.join();
-            if (tcp_message->header.keyword != ACK || udp_message->header.keyword != ACK) {
+            if (tcp_message->header.keyword != ACK) {
                 errno = EPROTO;
                 std::ostringstream s;
                 s << "server not accepting connection. error: " << strerror(errno) << "\n ";
                 throw std::runtime_error(s.str());
             }
+            udp_message->header.connection_id = tcp_message->header.connection_id;
+            conn->id=tcp_message->header.connection_id;
 
-            conn->set_id(tcp_message->header.connection_id);
+            conn->send_message(udp_message, false);
+            *udp_message = conn->receive_message(false);
+
+            if (udp_message->header.keyword != ACK) {
+                errno = EPROTO;
+                std::ostringstream s;
+                s << "server not accepting connection. error: " << strerror(errno) << "\n ";
+                throw std::runtime_error(s.str());
+            }
         }
         catch (std::runtime_error& e) {
             std::cerr << e.what() << std::endl;
@@ -110,7 +117,7 @@ namespace fup {
             msg->header = { .body_size = d_body.size(), .connection_id = conn->id,.version = this->version, .keyword = DOWNLOAD };
             conn->send_message(msg, true);
 
-            msg = conn->receive_message(true);
+            *msg = conn->receive_message(true);
             if (msg->header.keyword == ABORT)
             {
                 _disconnect();
@@ -134,8 +141,9 @@ namespace fup {
         }
         catch (std::exception& e) {
             std::cerr << e.what() << std::endl;
+            return -1;
         }
     }
-    int ListFiles(Client* self, char* destination_url, int destination_port, char** res);
+    //int ListFiles(Client* self, char* destination_url, int destination_port, char** res);
 
 }
