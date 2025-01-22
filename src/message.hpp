@@ -49,10 +49,10 @@ namespace fup
     struct files_body
     {
         // Fixed
-        unsigned int element_count;
+        size_t element_count;
         // Variable
-        size_t *filename_sizes;
-        uint8_t *filenames;
+        std::vector<size_t> filename_sizes;
+        std::vector<std::string> filenames;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
@@ -69,7 +69,7 @@ namespace fup
         // Fixed
         size_t filename_size;
         // Variable
-        char *filename;
+        std::string filename;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
@@ -85,12 +85,30 @@ namespace fup
         // Fixed
         size_t file_size;
         size_t filename_size;
+        size_t packet_size;
+        size_t packet_count;
         // Variable
-        char *filename;
+        std::string filename;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
     };
+    /*
+     * File info is the message type which has the fundamental info about the file to be downloaded
+    */
+   struct file_info_body
+   {
+        // Fixed
+        size_t file_size;
+        size_t packet_size;
+        size_t packet_count;
+        size_t filename_size;
+        // Variable
+        std::string filename;
+        size_t size();
+        std::vector<uint8_t> serialize();
+        int deserialize(std::vector<uint8_t> data);
+   };
 
     /*
      * ResendPacket is to request to fetch a packet with specific id
@@ -127,8 +145,8 @@ namespace fup
         size_t checksum_size;
         size_t data_size;
         // Variable
-        uint8_t *data;
-        char *checksum;
+        std::vector<uint8_t> data;
+        std::vector<uint8_t> checksum;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);

@@ -23,8 +23,9 @@ namespace fup
         LIST_FILES, // TCP. Client to server. Response to this is FILES OR ABORT
         FILES,      // TCP. Server to client. Indicates success in the interaction. No response
 
-        DOWNLOAD,      // TCP. Client to server. Request to get a specific file. Response to this is either ACK or ABORT
-        UPLOAD,        // TCP. Client to server. Informs to upload a file. Response to this is either ACK or ABORT
+        DOWNLOAD,      // TCP. Client to server. Request to get a specific file. Response to this is either FILE_INFO or ABORT
+        UPLOAD,        // TCP. Client to server. Request to upload a file. Response to this is either ACK or ABORT
+        FILE_INFO,     // TCP. Server to client. Response to download file which holds all the info about file. Response to this is ACK or ABORT.
         RESEND_PACKET, // TCP. Both directions. Request to get a specific packet that has not been read with success. Response to this is either PACKET or ABORT
 
         ACK,   // TCP. Both directions. Indicates that the request has been acknowledged by the other party. No response
