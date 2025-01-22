@@ -61,39 +61,10 @@ namespace fup {
 
     void client::_connect(std::string destination_url, std::string destination_port) {
         try {
-            conn = std::make_unique<connection>();
+            
             int tcp_socket_fd = _init_socket(destination_url, destination_port, SOCK_STREAM);
             int udp_socket_fd = _init_socket(destination_url, destination_port, SOCK_DGRAM);
-            conn->set_tcp(tcp_socket_fd);
-            conn->set_udp(udp_socket_fd);
-
-            std::shared_ptr<message> tcp_message = std::make_shared<message>();
-            tcp_message->header = { .body_size = 0, .version = this->version, .keyword = CONNECT_TCP };
-
-            std::shared_ptr<message> udp_message = std::make_shared<message>();
-            udp_message->header = { .body_size = 0, .version = this->version, .keyword = CONNECT_UDP };
-
-            conn->send_message(tcp_message, true);
-            *tcp_message = conn->receive_message(true);
-
-            if (tcp_message->header.keyword != ACK) {
-                errno = EPROTO;
-                std::ostringstream s;
-                s << "server not accepting connection. error: " << strerror(errno) << "\n ";
-                throw std::runtime_error(s.str());
-            }
-            udp_message->header.connection_id = tcp_message->header.connection_id;
-            conn->id = tcp_message->header.connection_id;
-
-            conn->send_message(udp_message, false);
-            *udp_message = conn->receive_message(false);
-
-            if (udp_message->header.keyword != ACK) {
-                errno = EPROTO;
-                std::ostringstream s;
-                s << "server not accepting connection. error: " << strerror(errno) << "\n ";
-                throw std::runtime_error(s.str());
-            }
+            conn = std::make_unique<connection>(tcp_socket_fd, udp_socket_fd);
         }
         catch (std::exception& e) {
             std::cerr << e.what() << std::endl;

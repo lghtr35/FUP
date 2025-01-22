@@ -67,7 +67,6 @@ namespace fup
     struct download_body
     {
         // Fixed
-        size_t filename_size;
         // Variable
         std::string filename;
         size_t size();
@@ -84,7 +83,6 @@ namespace fup
     {
         // Fixed
         size_t file_size;
-        size_t filename_size;
         size_t packet_size;
         size_t packet_count;
         // Variable
@@ -102,7 +100,6 @@ namespace fup
         size_t file_size;
         size_t packet_size;
         size_t packet_count;
-        size_t filename_size;
         // Variable
         std::string filename;
         size_t size();
@@ -116,7 +113,7 @@ namespace fup
     struct resend_body
     {
         // Fixed
-        int sequence_id;
+        sequence_id sequence_id;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
@@ -133,7 +130,7 @@ namespace fup
      */
 
     /*
-     * Packet is the part of the file that is being transmitted
+     * Packet is the part of the file that is being transmitted it has to be a fixed size since when combined with header it should be equal to packet_size in upload_body or file_info_body
      *
      *
      */
@@ -141,12 +138,10 @@ namespace fup
     struct packet_body
     {
         // Fixed
-        int sequence_id; // to determine the ordering of data
-        size_t checksum_size;
-        size_t data_size;
+        sequence_id sequence_id; // to determine the ordering of data
+        int16_t checksum;
         // Variable
         std::vector<uint8_t> data;
-        std::vector<uint8_t> checksum;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);

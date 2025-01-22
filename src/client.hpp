@@ -2,7 +2,6 @@
 #define FUP_CLIENT_HPP
 
 #include "common.hpp"
-#include "connection.hpp"
 #include "thread_pool.hpp"
 #include <iostream>
 #include <fstream>
@@ -32,10 +31,9 @@ namespace fup
     private: 
         version version;
         std::string save_location;
-        std::unique_ptr<connection> conn;
         size_t max_thread_limit;
         int _init_socket(std::string destination_url, std::string destination_port, int sock_type);
-        void _connect(std::string destination_url, std::string destination_port);
+        void _connect(std::string destination_url, std::string destination_port_tcp, std::string destination_port_udp);
         void _receive_and_write_packet();
         void _disconnect();
     };

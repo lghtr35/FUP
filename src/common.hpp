@@ -9,11 +9,15 @@
 #include <stdexcept>
 #include <sstream>
 #include <iostream>
+#include <unordered_map>
+
 
 namespace fup
 {
-    typedef unsigned int version;
-    typedef unsigned int connection_id;
+    
+    typedef uint16_t version;
+    typedef uint64_t connection_id;
+    typedef uint32_t sequence_id;
     typedef enum keyword
     {
         // Discrete basic request/response pair
