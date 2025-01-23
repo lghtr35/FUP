@@ -1,7 +1,7 @@
 #ifndef FUP_MESSAGE_HPP
 #define FUP_MESSAGE_HPP
 
-#include "common.hpp"
+#include "Common.hpp"
 
 namespace fup
 {
@@ -10,26 +10,26 @@ namespace fup
      * Header is the fixed size_t part of each message
      * It contains information about the message
      */
-    struct header
+    struct Header
     {
         // Fixed
-        version version;             // 1 int
-        connection_id connection_id; // 16 unsigned char
-        keyword keyword;             // 1 Keyword
+        Version version;             // 1 int
+        ConnectionId connectionId; // 16 unsigned char
+        Keyword keyword;             // 1 Keyword
         size_t body_size;            // 1 unsigned int
-        size_t size() { return sizeof(version) + sizeof(connection_id) + sizeof(keyword) + sizeof(size_t); }
+        size_t size() { return sizeof(Version) + sizeof(ConnectionId) + sizeof(Keyword) + sizeof(size_t); }
         uint8_t serialize();
         int deserialize(std::vector<uint8_t> data);
     };
 
     /*
      * Message is the structure of all messages
-     * Message can have different versions with different fields.
+     * Message can have different Versions with different fields.
      * Any can be assignable and can be parsed in its own way
      */
-    struct message
+    struct Message
     {
-        header header;
+        Header header;
         // Variable
         std::vector<uint8_t> body;
 
@@ -46,12 +46,12 @@ namespace fup
     /*
      * Files is to response to ListFiles. All the file_names should be present
      */
-    struct files_body
+    struct Files
     {
         // Fixed
-        size_t element_count;
+        size_t elemCount;
         // Variable
-        std::vector<size_t> filename_sizes;
+        std::vector<size_t> nameSizes;
         std::vector<std::string> filenames;
         size_t size();
         std::vector<uint8_t> serialize();
@@ -64,7 +64,7 @@ namespace fup
      * It has file extension
      * It has listen port for udp
      */
-    struct download_body
+    struct Download
     {
         // Fixed
         // Variable
@@ -79,12 +79,12 @@ namespace fup
      * It has filename
      * It has file extension
      */
-    struct upload_body
+    struct Upload
     {
         // Fixed
-        size_t file_size;
-        size_t packet_size;
-        size_t packet_count;
+        size_t fileSize;
+        size_t packetSize;
+        size_t packetCount;
         // Variable
         std::string filename;
         size_t size();
@@ -94,12 +94,12 @@ namespace fup
     /*
      * File info is the message type which has the fundamental info about the file to be downloaded
     */
-   struct file_info_body
+   struct FileInfo
    {
         // Fixed
-        size_t file_size;
-        size_t packet_size;
-        size_t packet_count;
+        size_t fileSize;
+        size_t packetSize;
+        size_t packetCount;
         // Variable
         std::string filename;
         size_t size();
@@ -108,12 +108,12 @@ namespace fup
    };
 
     /*
-     * ResendPacket is to request to fetch a packet with specific id
+     * Resend is to request to fetch a packet with specific id
      */
-    struct resend_body
+    struct Resend
     {
         // Fixed
-        sequence_id sequence_id;
+        SequenceId seqId;
         size_t size();
         std::vector<uint8_t> serialize();
         int deserialize(std::vector<uint8_t> data);
@@ -135,10 +135,10 @@ namespace fup
      *
      */
 
-    struct packet_body
+    struct Packet
     {
         // Fixed
-        sequence_id sequence_id; // to determine the ordering of data
+        SequenceId seqId; // to determine the ordering of data
         int16_t checksum;
         // Variable
         std::vector<uint8_t> data;

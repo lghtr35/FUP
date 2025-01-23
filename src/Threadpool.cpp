@@ -1,7 +1,7 @@
-#include "thread_pool.hpp"
+#include "Threadpool.hpp"
 
 namespace fup {
-    thread_pool::thread_pool(size_t threads) :stop(false) {
+    Threadpool::Threadpool(size_t threads) :stop(false) {
         for (size_t i = 0;i < threads;++i)
             workers.emplace_back(
                 [this]
@@ -28,7 +28,7 @@ namespace fup {
 
     // add new work item to the pool
     template<class F, class... Args>
-    void thread_pool::enqueue(F&& f, Args&&... args)
+    void Threadpool::Enqueue(F&& f, Args&&... args)
     {
         auto task = std::make_shared< std::packaged_task<void()> >(
             std::bind(std::forward<F>(f), std::forward<Args>(args)...)
@@ -38,7 +38,7 @@ namespace fup {
 
             // don't allow enqueueing after stopping the pool
             if (stop)
-                throw std::runtime_error("enqueue on stopped thread_pool");
+                throw std::runtime_error("enqueue on stopped Threadpool");
 
             tasks.emplace([task]() { (*task)(); });
         }
@@ -46,7 +46,7 @@ namespace fup {
     }
 
     // the destructor joins all threads
-    inline thread_pool::~thread_pool()
+    inline Threadpool::~Threadpool()
     {
         {
             std::unique_lock<std::mutex> lock(mutex);
