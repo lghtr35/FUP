@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Common.hpp"
+#include "Communications.hpp"
 #include "Threadpool.hpp"
 #include "Utils.hpp"
 
@@ -26,46 +27,6 @@ namespace fup
             std::string saveLocation;
             Port udpPort;
             uint16_t maxThreadPoolSize;
-        };
-
-        class TcpWrapper
-        {
-        private:
-            Version version;
-            ConnectionId id;
-            std::shared_ptr<Socket> socket;
-            std::shared_ptr<SockAddr> destinationAddress;
-        public:
-            void Send(const Message& msg);
-            Message Receive();
-            Message SendAndReceive(const Message& msg);
-
-            ConnectionId GetId() const { return id; }
-            std::shared_ptr<Socket> GetSocket() const { return socket; }
-            std::shared_ptr<SockAddr> GetLocalAddress() const;
-            std::shared_ptr<SockAddr> GetDestinationAddress() const;
-
-
-            TcpWrapper(Version v, std::string destinationUrl, std::string destinationPort);
-            ~TcpWrapper() {};
-        };
-
-        class UdpWrapper {
-        private:
-            Version version;
-            ConnectionId id;
-            std::shared_ptr<Socket> socket;
-        public:
-            void Send(const Message& msg, const std::shared_ptr<SockAddr> dest);
-            Message Receive();
-
-            ConnectionId GetId() const { return id; }
-            std::shared_ptr<Socket> GetSocket() const { return socket; }
-            std::shared_ptr<SockAddr> GetLocalAddress() const;
-            std::shared_ptr<SockAddr> GetDestinationAddress() const;
-
-            UdpWrapper(Version version, fup::Port p = 0);
-            ~UdpWrapper() {};
         };
 
         void TransmitPackets(Version v,
