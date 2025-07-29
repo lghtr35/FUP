@@ -25,7 +25,7 @@ namespace fup
             Version version;
             std::string saveLocation;
             Port udpPort;
-            uint16_t threadLimit;
+            uint16_t maxThreadPoolSize;
         };
 
         class TcpWrapper

@@ -3,11 +3,11 @@
 namespace fup {
     namespace client
     {
-        Client::Client(unsigned int v, std::string sl, u_int16_t threadLimit, Port port) :
+        Client::Client(unsigned int v, std::string sl, u_int16_t maxThreadPoolSize, Port port) :
             version((fup::Version)v),
             saveLocation(sl),
             udpPort(port),
-            threadLimit(threadLimit)
+            maxThreadPoolSize(maxThreadPoolSize)
         {
         }
 
@@ -68,7 +68,7 @@ namespace fup {
 
                 std::shared_ptr<std::vector<bool>> packetsToSend = std::make_shared<std::vector<bool>>(packetCount, false);
                 std::shared_ptr<std::mutex> packetsToSendMutex = std::make_shared<std::mutex>();
-                std::unique_ptr<Threadpool> threadpool = std::make_unique<Threadpool>(threadLimit);
+                std::unique_ptr<Threadpool> threadpool = std::make_unique<Threadpool>(maxThreadPoolSize);
                 std::shared_ptr<fup::StopSignal> stopSignal = std::make_shared<fup::StopSignal>();
 
                 // Enqueue the resend thread to handle packet retransmission
@@ -87,7 +87,7 @@ namespace fup {
                     });
 
                 // Enqueue remaining threads to send packets
-                while (threadpool->GetWorkingThreadsCount() <= threadLimit) {
+                while (threadpool->GetWorkingThreadsCount() <= maxThreadPoolSize) {
                     threadpool->Enqueue([
                         this,
                         conn,
@@ -174,7 +174,7 @@ namespace fup {
                 std::shared_ptr<std::vector<bool>> packetsReceived = std::make_shared<std::vector<bool>>(packetCount, false);
 
                 std::shared_ptr<std::mutex> receivedPacketsMutex = std::make_shared<std::mutex>();
-                std::unique_ptr<Threadpool> threadpool = std::make_unique<Threadpool>(threadLimit);
+                std::unique_ptr<Threadpool> threadpool = std::make_unique<Threadpool>(maxThreadPoolSize);
                 std::shared_ptr<StopSignal> stopSignal = std::make_shared<StopSignal>();
 
                 fd_set readSet;
