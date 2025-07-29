@@ -1,8 +1,11 @@
 #include "Threadpool.hpp"
 
 namespace fup {
-    Threadpool::Threadpool(size_t threads) :stop(false) {
-        for (size_t i = 0;i < threads;++i)
+    Threadpool::Threadpool(uint16_t threads) :stop(false) {
+        if (threads == 0) {
+            throw std::invalid_argument("Number of threads must be greater than 0");
+        }
+        for (uint16_t i = 0; i < threads; ++i)
             workers.emplace_back(
                 [this]
                 {
@@ -18,35 +21,41 @@ namespace fup {
                                 return;
                             task = std::move(this->tasks.front());
                             this->tasks.pop();
+                            ++working;
                         }
 
                         task();
+                        
+                        {
+                            std::unique_lock<std::mutex> lock(this->mutex);
+                            --working;
+                        }
                     }
                 }
             );
     }
 
-    // add new work item to the pool
-    template<class F, class... Args>
-    void Threadpool::Enqueue(F&& f, Args&&... args)
+    // wait for all tasks to finish
+    void Threadpool::WaitAll()
     {
-        auto task = std::make_shared< std::packaged_task<void()> >(
-            std::bind(std::forward<F>(f), std::forward<Args>(args)...)
-        );
         {
-            std::unique_lock<std::mutex> lock(queue_mutex);
-
-            // don't allow enqueueing after stopping the pool
-            if (stop)
-                throw std::runtime_error("enqueue on stopped Threadpool");
-
-            tasks.emplace([task]() { (*task)(); });
+            std::unique_lock<std::mutex> lock(mutex);
+            stop = true;
         }
-        condition.notify_one();
+        condition.notify_all();
+        for (std::thread& worker : workers)
+            worker.join();
+    }
+
+    // get the number of working threads
+    size_t Threadpool::GetWorkingThreadsCount()
+    {
+        std::unique_lock<std::mutex> lock(mutex);
+        return working;
     }
 
     // the destructor joins all threads
-    inline Threadpool::~Threadpool()
+    Threadpool::~Threadpool()
     {
         {
             std::unique_lock<std::mutex> lock(mutex);

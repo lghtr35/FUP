@@ -1,4 +1,20 @@
-build
-.build
-.vscode
-a.out
+# Build directories
+build/
+_build/
+cmake-build-*/
+
+# IDE specific
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+
+# Compiled files
+*.o
+*.so
+*.dylib
+*.dll
+
+# Testing
+Testing/
